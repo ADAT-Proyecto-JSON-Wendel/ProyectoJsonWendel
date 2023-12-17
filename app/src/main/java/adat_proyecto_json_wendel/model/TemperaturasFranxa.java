@@ -2,6 +2,7 @@ package adat_proyecto_json_wendel.model;
 
 public class TemperaturasFranxa {
     
+    // Atributos que representan las temperaturas en diferentes momentos del día
         private Integer manha;
         private Integer tarde;
         private Integer noite;

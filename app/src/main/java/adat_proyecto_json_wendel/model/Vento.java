@@ -2,6 +2,7 @@ package adat_proyecto_json_wendel.model;
 
 public class Vento {
     
+    // Atributos que representan la intensidad del viento en diferentes momentos del día
         private Integer manha;
         private Integer tarde;
         private Integer noite;

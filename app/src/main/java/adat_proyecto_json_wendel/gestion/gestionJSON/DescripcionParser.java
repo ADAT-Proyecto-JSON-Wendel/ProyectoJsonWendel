@@ -39,21 +39,32 @@ public class DescripcionParser {
     }
 
     /**
-     * Obtiene una descripción para una categoría y código específicos.
+     * Obtiene una descripción para una categoría y código pasados como parámetros.
      *
      * @param categoria La categoría para la que se desea obtener la descripción.
      * @param codigo    El código para el que se desea obtener la descripción.
      * @return La descripción correspondiente o un mensaje predeterminado si no se encuentra.
      */
     public String obtenerDescripcion(String categoria, String codigo) {
-        // Obtiene el mapa de descripciones para la categoría dada
-        Map<String, String> categoriaMap = descripciones.get(categoria);
-        // Verifica si el mapa existe
-        if (categoriaMap != null) {
-            // Obtiene la descripción correspondiente al código, o devuelve "Dato descoñecido" si no existe
-            return categoriaMap.getOrDefault(codigo, "Dato descoñecido");
+        try {
+            if(categoria == null){
+                return "Categoria incorrecta.";
+            }
+            if(codigo == null){
+                return "Codigo incorrecto.";
+            }
+            // Obtiene el mapa de descripciones para la categoría dada
+            Map<String, String> categoriaMap = descripciones.get(categoria);
+            // Verifica si el mapa existe
+            if (categoriaMap == null) {
+                return "Categoria inexistente";
+            }else{
+                // Obtiene la descripción correspondiente al código, o devuelve "Dato descoñecido" si no existe
+                return categoriaMap.getOrDefault(codigo, "Dato descoñecido");
+            }
+        } catch (Exception e) {
+            return null;
         }
-        // Si la categoría no existe en el mapa, devuelve "Categoria Descoñecida"
-        return "Categoria Descoñecida";
+
     }
 }

@@ -1,5 +1,6 @@
 package adat_proyecto_json_wendel.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class PrediccionConcello {
@@ -12,6 +13,12 @@ public class PrediccionConcello {
 
     // Nombre del concello
     private String nome;
+
+    public PrediccionConcello() {
+        this.listaPredDiaConcello = new ArrayList<>();
+    }
+
+    // Getter y Setter
 
     public int getIdConcello() {return idConcello;}
 

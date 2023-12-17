@@ -10,6 +10,7 @@ import adat_proyecto_json_wendel.model.Vento;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
@@ -32,20 +33,42 @@ public class GestionPrediccion {
         }
     }
 
-    /**
+     /**
      * Obtiene la predicción de un concello a partir de una URL.
      *
      * @param url La URL que proporciona la información de la predicción.
      * @return Un objeto PrediccionConcello con la información de la predicción o null si hay un error.
      */
     public PrediccionConcello obtenerPrediccion(String url) {
-        try (InputStreamReader reader = new InputStreamReader(new URL(url).openStream())) {
-            Gson gson = new Gson();
-            PrediccionWrapper wrapper = gson.fromJson(reader, PrediccionWrapper.class);
-            return wrapper.getPredConcello();
+        try {
+            // Verificar si la URL es válida
+            if (!isValidURL(url)) {
+                System.err.println("URL no válida.");
+                return null;
+            }
+            try (InputStreamReader reader = new InputStreamReader(new URL(url).openStream())) {
+                Gson gson = new Gson();
+                PrediccionWrapper wrapper = gson.fromJson(reader, PrediccionWrapper.class);
+                return wrapper.getPredConcello();
+            }
         } catch (IOException e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    /**
+     * Verifica si una URL es válida.
+     *
+     * @param url La URL a verificar.
+     * @return true si la URL es válida, false en caso contrario.
+     */
+    private boolean isValidURL(String url) {
+        try {
+            new URL(url).toURI();
+            return true;
+        } catch (MalformedURLException | java.net.URISyntaxException e) {
+            return false;
         }
     }
 
@@ -89,7 +112,7 @@ public class GestionPrediccion {
                 System.out.println("Vento (tarde): " + obtenerDescripcionVento(vento.getTarde()));
                 System.out.println("Vento (noite): " + obtenerDescripcionVento(vento.getNoite()));
 
-                System.out.println("-----"); // Separador entre cada día
+                System.out.println("-----");
             }
         } catch (Exception e) {
             e.printStackTrace();

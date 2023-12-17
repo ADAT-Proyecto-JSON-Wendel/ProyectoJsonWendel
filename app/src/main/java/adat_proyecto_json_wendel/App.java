@@ -33,8 +33,7 @@ public class App {
         String rutaListaIdConcellos = rutaPaqueteGestionJSON + "listaIdConcellos.json";
         // Nombre fichero para guardar el CSV
         String nombreFicheroCSV = "25-11-2023-galicia.csv";
-        // Ruta base de la peticion a la api, despues de idConc= tendremos que indicar
-        // el id de un concello
+        // Ruta base de la peticion a la api, despues de idConc= tendremos que indicar el id de un concello
         String peticionApiBase = "https://servizos.meteogalicia.gal/mgrss/predicion/jsonPredConcellos.action?idConc=";
         // Ruta que va al final de la peticion con el parametro del idioma en gallego
         String peticionApiLocale = "&request_locale=gl";
@@ -119,11 +118,8 @@ public class App {
             // Verificar si la lista de predicciones no es nula
             if (listaPrediccionesCiudadesImportantes != null) {
 
-                System.out.println(listaPrediccionesCiudadesImportantes.size());
-
                 // Obtener datos de la predicción en formato CSV
-                List<String[]> datos = GestionCSVWriter.getDatosPrediccionesEnCSV(listaPrediccionesCiudadesImportantes,
-                        descripcionParser);
+                List<String[]> datos = GestionCSVWriter.getDatosPrediccionesEnCSV(listaPrediccionesCiudadesImportantes, descripcionParser);
 
                 // Escribir los datos en el fichero CSV
                 GestionCSVWriter.crearCSV(nombreFicheroCSV, datos);

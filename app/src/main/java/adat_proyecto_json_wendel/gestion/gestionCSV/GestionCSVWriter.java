@@ -16,25 +16,24 @@ import adat_proyecto_json_wendel.model.PrediccionConcello;
 
 public class GestionCSVWriter {
 
-    /**
-     * Obtiene los datos de predicción de un concello y los organiza en una lista de
-     * arrays de cadenas.
-     *
-     * @param prediccion La predicción del concello de la que se obtendrán los
-     *                   datos.
-     * @return Una lista de arrays de cadenas que contiene los datos organizados,
-     *         incluyendo encabezados.
-     */
-    public static List<String[]> obtenerDatosConcello(PrediccionConcello prediccion) {
-        List<String[]> datos = new ArrayList<String[]>();
+ /**
+ * Obtiene los datos de predicción de un concello y los organiza en una lista de Arrays de Strings
+ *
+ * @param prediccion La predicción del concello de la que se obtendrán los datos.
+ * @return Una lista de arrays de cadenas que contiene los datos organizados,
+ *         incluyendo encabezados.
+ */
+public static List<String[]> obtenerDatosConcello(PrediccionConcello prediccion) {
+    List<String[]> datos = new ArrayList<String[]>();
 
-        // Agrega encabezados al principio
-        datos.add(new String[] { "Fecha", "EstadoCeoManha", "EstadoCeoTarde", "EstadoCeoNoite", "NivelAviso",
-                "ProbChoivaManha", "ProbChoivaTarde", "ProbChoivaNoite", "VentoManha", "VentoTarde", "VentoNoite",
-                "TMax", "TMin", "UVMax" });
+    // Agrega encabezados al principio
+    datos.add(new String[] { "Fecha", "EstadoCeoManha", "EstadoCeoTarde", "EstadoCeoNoite", "NivelAviso",
+            "ProbChoivaManha", "ProbChoivaTarde", "ProbChoivaNoite", "VentoManha", "VentoTarde", "VentoNoite",
+            "TMax", "TMin", "UVMax" });
 
-        // Agrega datos de predicción
-        try {
+    // Agrega datos de predicción
+    try {
+        if (prediccion != null && prediccion.getListaPredDiaConcello() != null) {
             // Agrega datos de prediccion
             for (DiaPrediccion dia : prediccion.getListaPredDiaConcello()) {
                 String[] fila = new String[] {
@@ -55,15 +54,16 @@ public class GestionCSVWriter {
                 };
                 datos.add(fila);
             }
-        } catch (Exception e) {
-            // Manejar la excepción aquí, ya sea registrándola o tomando alguna acción
-            // específica.
-            e.printStackTrace(); // Esto imprimirá el seguimiento de la pila, pero podrías manejarlo de otra
-                                 // manera.
+        } else {
+            System.out.println("La prediccion o la lista de predicciones es nula.");
         }
-
-        return datos;
+    } catch (Exception e) {
+        e.printStackTrace();
     }
+
+    return datos;
+}
+
 
     /**
      * Obtiene los datos de predicciones de varios concellos en formato CSV.
@@ -117,10 +117,7 @@ public class GestionCSVWriter {
                 }
             }
         } catch (Exception e) {
-            // Manejar la excepción aquí, ya sea registrándola o tomando alguna acción
-            // específica.
-            e.printStackTrace(); // Esto imprimirá el seguimiento de la pila, pero podrías manejarlo de otra
-                                 // manera.
+            e.printStackTrace();
         }
 
         return datos;
@@ -130,8 +127,7 @@ public class GestionCSVWriter {
      * Crea un archivo CSV con los datos proporcionados.
      *
      * @param nombreArchivo Nombre del archivo CSV a crear.
-     * @param datos         Lista de arrays de cadenas que contiene los datos a
-     *                      escribir en el archivo.
+     * @param datos         Lista de arrays de cadenas que contiene los datos a escribir en el archivo.
      */
     public static void crearCSV(String nombreArchivo, List<String[]> datos) {
 
