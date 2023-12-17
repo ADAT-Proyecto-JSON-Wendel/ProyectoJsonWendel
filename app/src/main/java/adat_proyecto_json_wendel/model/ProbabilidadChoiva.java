@@ -1,45 +1,22 @@
 package adat_proyecto_json_wendel.model;
 
 public class ProbabilidadChoiva {
+    
         private Integer manha;
         private Integer tarde;
         private Integer noite;
       
+        public Integer getManha() {return manha;}
 
-        public Integer getManha() {
-            return manha;
-        }
+        public void setManha(Integer manha) {this.manha = manha;}
 
+        public Integer getTarde() {return tarde;}
 
-        public void setManha(Integer manha) {
-            this.manha = manha;
-        }
+        public void setTarde(Integer tarde) {this.tarde = tarde;}
 
-
-        public Integer getTarde() {
-            return tarde;
-        }
+        public Integer getNoite() {return noite;}
 
 
-        public void setTarde(Integer tarde) {
-            this.tarde = tarde;
-        }
+        public void setNoite(Integer noite) {this.noite = noite;}
 
-
-        public Integer getNoite() {
-            return noite;
-        }
-
-
-        public void setNoite(Integer noite) {
-            this.noite = noite;
-        }
-
-
-        @Override
-        public String toString() {
-            return "ProbabilidadChoiva [manha=" + manha + ", tarde=" + tarde + ", noite=" + noite + "]";
-        }
-
-        
     }
