@@ -10,6 +10,7 @@ public class DescripcionParser {
 
     private final Map<String, Map<String, String>> descripciones;
 
+
     public DescripcionParser(String filePath) {
         this.descripciones = cargarDescripciones(filePath);
     }

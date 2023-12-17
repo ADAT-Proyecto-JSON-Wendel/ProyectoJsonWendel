@@ -49,6 +49,9 @@ public class CSVWriterExample {
 
     public static List<String[]> getDatosPrediccionesEnCSV(List<PrediccionConcello> predicciones, DescripcionParser descripcionParser) {
         List<String[]> datos = new ArrayList<>();
+
+        // Agregar cabecera
+        datos.add(new String[]{"concello", "fecha", "tMax", "tMin", "uvMax", "estadoCeoManana", "direccionVientoManana", "intensidadVientoManana"});
     
         // Escribir datos de cada predicción
         for (PrediccionConcello prediccion : predicciones) {
