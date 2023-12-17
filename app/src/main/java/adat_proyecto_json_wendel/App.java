@@ -43,10 +43,6 @@ public class App {
         // Instanciar el parser con la ruta del JSON de las descripciones
         DescripcionParser descripcionParser = new DescripcionParser(rutaDescripcionesPredicciones);
 
-        // Parser para obtener los id de los concellos
-        ConcellosParser manager = new ConcellosParser(rutaListaIdConcellos);
-        // ------------------------------------------------------
-
         // Instanciar la clase de GestionPrediccion para obtener las predicciones de una
         // peticion a la API
         GestionPrediccion gestion = new GestionPrediccion(descripcionParser);
@@ -82,6 +78,12 @@ public class App {
 
         // Guardar los datos de las 7 peticiones en el fichero CSV
         guardarDatosEnCSV(listaPrediccionesCiudadesImportantes, descripcionParser, nombreFicheroCSV);
+
+        
+        // ----------------------------
+        // Parser para obtener los id de los concellos, esto lo he agregado a mayores para poder obtener la prediccion por un concello buscando por su nombre.
+        // ConcellosParser concellosParser = new ConcellosParser(rutaListaIdConcellos);
+        // ------------------------------------------------------
 
         // Leer datos de un Concello, esto lo he agregado como extra para obtener datos
         // de el concello que queramos, también he creado un JSON con toda la lista de

@@ -33,7 +33,7 @@ public class RunAllTests {
         // Ejecutar las pruebas
         launcher.execute(request);
 
-        // Obtener y mostrar el resumen de ejecución
+        // Obtener y mostrar el resumen de ejecución, es posible que alguna prueba de algún error debido a permisos SSH.
         TestExecutionSummary summary = listener.getSummary();
         System.out.println("Total de pruebas ejecutadas: " + summary.getTestsFoundCount());
         System.out.println("Total de pruebas exitosas: " + summary.getTestsSucceededCount());
