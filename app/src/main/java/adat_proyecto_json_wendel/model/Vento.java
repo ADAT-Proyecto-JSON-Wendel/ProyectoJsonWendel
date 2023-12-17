@@ -1,28 +1,55 @@
 package adat_proyecto_json_wendel.model;
 
 public class Vento {
-        private int manha;
-        private int tarde;
-        private int noite;
+        private Integer manha;
+        private Integer tarde;
+        private Integer noite;
 
-        public int getManha() {
+        
+
+        
+        public Integer getManha() {
             return manha;
         }
-        public void setManha(int manha) {
+
+
+
+
+        public void setManha(Integer manha) {
             this.manha = manha;
         }
-        public int getTarde() {
+
+
+
+
+        public Integer getTarde() {
             return tarde;
         }
-        public void setTarde(int tarde) {
+
+
+
+
+        public void setTarde(Integer tarde) {
             this.tarde = tarde;
         }
-        public int getNoite() {
+
+
+
+
+        public Integer getNoite() {
             return noite;
         }
-        public void setNoite(int noite) {
+
+
+
+
+        public void setNoite(Integer noite) {
             this.noite = noite;
         }
+
+
+
+
         @Override
         public String toString() {
             return "Vento [manha=" + manha + ", tarde=" + tarde + ", noite=" + noite + "]";

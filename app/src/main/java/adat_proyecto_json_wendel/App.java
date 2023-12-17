@@ -3,6 +3,16 @@
  */
 package adat_proyecto_json_wendel;
 
+import java.util.List;
+
+import com.google.gson.Gson;
+
+import adat_proyecto_json_wendel.gestion.gestionCSV.CSVWriterExample;
+import adat_proyecto_json_wendel.gestion.gestionJSON.DescripcionParser;
+import adat_proyecto_json_wendel.gestion.gestionJSON.GestionPrediccion;
+import adat_proyecto_json_wendel.model.PrediccionConcello;
+
+
 public class App {
     public String getGreeting() {
         return "Hello World!";
@@ -10,5 +20,38 @@ public class App {
 
     public static void main(String[] args) {
         System.out.println(new App().getGreeting());
+
+        String rutaDescripcionesPredicciones = "app/src/main/java/adat_proyecto_json_wendel/gestion/gestionJSON/descripciones.json";
+
+        // Instanciar el parser con la ruta del JSON de las descripciones
+        DescripcionParser descripcionParser = new DescripcionParser(rutaDescripcionesPredicciones); 
+
+        GestionPrediccion gestion = new GestionPrediccion(descripcionParser);
+
+        String urlCoruna = "https://servizos.meteogalicia.gal/mgrss/predicion/jsonPredConcellos.action?idConc=15030&request_locale=gl";
+        PrediccionConcello prediccionCoruna = gestion.obtenerPrediccion(urlCoruna);
+
+        String urlOurense = "https://servizos.meteogalicia.gal/mgrss/predicion/jsonPredConcellos.action?idConc=32054&request_locale=gl";
+        PrediccionConcello prediccionOurense = gestion.obtenerPrediccion(urlOurense);
+
+        if (prediccionCoruna != null) {
+            System.out.println(prediccionCoruna.getNome());
+
+            System.out.println(prediccionOurense.getNome());
+            //gestion.mostrarDatosPrediccion(prediccion);
+
+            // Nombre fichero para guardar el CSV
+            String nombreArchivo = "25-11-2023-galicia.csv";
+
+            // Obtener datos de la predicción en formato CSV
+            List<String[]> datos = CSVWriterExample.getDatosPrediccionesEnCSV(List.of(prediccionCoruna,prediccionOurense), descripcionParser); // Reemplaza esto con tus propios datos
+            //List<String[]> datos = CSVWriterExample.obtenerDatosConcello(prediccion);
+
+            CSVWriterExample.crearCSV(nombreArchivo, datos);
+
+        } else {
+            System.out.println("La prediccion es null.");
+        }
+
     }
 }
