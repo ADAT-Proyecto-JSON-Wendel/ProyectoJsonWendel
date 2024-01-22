@@ -1,5 +1,8 @@
 package adat_proyecto_json_wendel.model;
 
+import jakarta.persistence.Embeddable;
+
+@Embeddable
 public class ProbabilidadChoiva {
     
     // Atributos que representan la probabilidad de lluvia en diferentes momentos del día

@@ -1,5 +1,8 @@
 package adat_proyecto_json_wendel.model;
 
+import jakarta.persistence.Embeddable;
+
+@Embeddable
 public class Vento {
     
     // Atributos que representan la intensidad del viento en diferentes momentos del día

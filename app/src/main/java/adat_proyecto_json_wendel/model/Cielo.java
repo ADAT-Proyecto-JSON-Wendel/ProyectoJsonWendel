@@ -1,5 +1,8 @@
 package adat_proyecto_json_wendel.model;
 
+import jakarta.persistence.Embeddable;
+
+@Embeddable
 public class Cielo {
 
     // Estado del cielo por la mañana
