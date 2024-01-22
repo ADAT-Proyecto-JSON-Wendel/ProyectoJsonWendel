@@ -23,6 +23,17 @@ public class App {
     public static void main(String[] args) {
         System.out.println(new App().getGreeting());
 
+
+
+        /*
+         * 
+         * Crear la BBDD  ******************
+         * 
+         * 
+         */
+
+
+
         // Strings con los datos que voy a utilizar, como por ejemplo las rutas
         // -------------
         // Rutas ficheros con datos JSON, ruta común
@@ -64,6 +75,15 @@ public class App {
             PrediccionConcello prediccion = gestion.obtenerPrediccion(urlCompleta);
             if (prediccion != null) {
                 listaPrediccionesCiudadesImportantes.add(prediccion);
+
+
+                /*
+                 * Guardar cada Prediccion en la BBDD ************************************
+                 */
+
+
+
+
                 gestion.mostrarDatosPrediccion(prediccion);
             }
             try {

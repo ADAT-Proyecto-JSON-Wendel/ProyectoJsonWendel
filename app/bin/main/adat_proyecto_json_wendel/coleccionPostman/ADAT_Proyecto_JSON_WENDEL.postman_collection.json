@@ -1,0 +1,74 @@
+{
+	"info": {
+		"_postman_id": "f5f0c730-f2e2-4638-802f-331c978a2d2f",
+		"name": "ADAT_Proyecto_JSON_WENDEL",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "31178899"
+	},
+	"item": [
+		{
+			"name": "CortoPlazo_Coruña",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://servizos.meteogalicia.gal/mgrss/predicion/jsonPredConcellos.action?idConc=15030&request_locale=gl",
+					"protocol": "https",
+					"host": [
+						"servizos",
+						"meteogalicia",
+						"gal"
+					],
+					"path": [
+						"mgrss",
+						"predicion",
+						"jsonPredConcellos.action"
+					],
+					"query": [
+						{
+							"key": "idConc",
+							"value": "15030"
+						},
+						{
+							"key": "request_locale",
+							"value": "gl"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "prediccionOurense",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://servizos.meteogalicia.gal/mgrss/predicion/jsonPredConcellos.action?idConc=32054&request_locale=gl",
+					"protocol": "https",
+					"host": [
+						"servizos",
+						"meteogalicia",
+						"gal"
+					],
+					"path": [
+						"mgrss",
+						"predicion",
+						"jsonPredConcellos.action"
+					],
+					"query": [
+						{
+							"key": "idConc",
+							"value": "32054"
+						},
+						{
+							"key": "request_locale",
+							"value": "gl"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

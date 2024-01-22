@@ -43,6 +43,18 @@ dependencies {
 
     // ------------
 
+
+    //   BBDD
+
+    // https://mvnrepository.com/artifact/com.h2database/h2
+    //testImplementation 'com.h2database:h2:2.2.224'
+
+    //implementation files('app\\lib\\h2-2.2.224.jar')
+    implementation files('lib/h2-2.2.224.jar')
+    implementation files('lib/h2-2.2.224-javadoc.jar')
+    implementation files('lib/h2-2.2.224-sources.jar')
+
+
 }
 
 application {
@@ -53,5 +65,9 @@ application {
 tasks.named('test') {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()
+}
+
+tasks.withType(JavaCompile){
+    options.compilerArgs << "--add-opens" << "java.base/java.lang=ALL-UNNAMED"
 }
 
