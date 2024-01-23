@@ -1,8 +1,5 @@
 package adat_proyecto_json_wendel.model;
 
-import jakarta.persistence.Embeddable;
-
-@Embeddable
 public class TemperaturasFranxa {
     
     // Atributos que representan las temperaturas en diferentes momentos del día

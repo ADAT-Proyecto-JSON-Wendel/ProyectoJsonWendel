@@ -1,13 +1,8 @@
 package adat_proyecto_json_wendel.model;
 
-import jakarta.persistence.Embedded;
-import jakarta.persistence.Entity;
-
-@Entity
 public class DiaPrediccion {
     
     // Estado del cielo para diferentes franjas horarias
-    @Embedded
     private Cielo ceo;
 
     // Fecha de la predicción
