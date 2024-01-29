@@ -3,11 +3,17 @@
  */
 package adat_proyecto_json_wendel;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Scanner;
 
+import adat_proyecto_json_wendel.gestion.BBDD.ConexionH2;
+import adat_proyecto_json_wendel.gestion.BBDD.H2CrearBBDD;
+import adat_proyecto_json_wendel.gestion.BBDD.H2GestionPrediccion;
+import adat_proyecto_json_wendel.gestion.BBDD.PrediccionExample;
 import adat_proyecto_json_wendel.gestion.gestionCSV.GestionCSVWriter;
 import adat_proyecto_json_wendel.gestion.gestionJSON.ConcellosParser;
 import adat_proyecto_json_wendel.gestion.gestionJSON.DescripcionParser;
@@ -16,74 +22,208 @@ import adat_proyecto_json_wendel.model.PrediccionConcello;
 import adat_proyecto_json_wendel.util.Metodos;
 
 public class App {
-    public String getGreeting() {
-        return "Hello World!";
+
+    public static int SALIR = 10;
+
+    // Strings con los datos que voy a utilizar, como por ejemplo las rutas
+    // -------------
+    // Rutas ficheros con datos JSON, ruta común
+    public static String rutaPaqueteGestionJSON = "app/src/main/java/adat_proyecto_json_wendel/gestion/gestionJSON/dataJson/";
+    // Nombre fichero Json con valores de las descripciones
+    public static String rutaDescripcionesPredicciones = rutaPaqueteGestionJSON + "descripciones.json";
+    // Nombre fichero Json con la lista de id de los concellos
+    public static String rutaListaIdConcellos = rutaPaqueteGestionJSON + "listaIdConcellos.json";
+    // Nombre fichero para guardar el CSV
+    public static String nombreFicheroCSV = "25-11-2023-galicia.csv";
+    // Ruta base de la peticion a la api, despues de idConc= tendremos que indicar
+    // el id de un concello
+    public static String peticionApiBase = "https://servizos.meteogalicia.gal/mgrss/predicion/jsonPredConcellos.action?idConc=";
+    // Ruta que va al final de la peticion con el parametro del idioma en gallego
+    public static String peticionApiLocale = "&request_locale=gl";
+    // -----------------------------------------------------------
+
+    // Instanciar los PARSER de los JSON -------------------
+    // Instanciar el parser con la ruta del JSON de las descripciones
+    public static DescripcionParser descripcionParser = new DescripcionParser(rutaDescripcionesPredicciones);
+
+    // Instanciar la clase de GestionPrediccion para obtener las predicciones de una
+    // peticion a la API
+    public static GestionPrediccion gestion = new GestionPrediccion(descripcionParser);
+
+    // Devuelve mapa con las ciudades principales en las que voy a realizar las
+    // peticiones a la api, en este mapa estan guardados los id de esas ciudades
+    public static Map<String, String> ciudadesImportantes = Metodos.getMapCiudadesPrincipales();
+
+    // Creo una lista de PrediccionConcello
+    public static List<PrediccionConcello> listaPrediccionesCiudadesImportantes = null;
+
+    public static Connection conn;
+
+    public static int OpcionesMenu(Scanner sc) {
+        int opcion = -1;
+        System.out.println("1 - Conectar BBDD H2.");
+        System.out.println("2 - Inyectar BBDD H2.");
+        System.out.println("3 - Insertar datos de prueba en la BBDD H2.");
+        System.out.println("4 - Cerrar conexion BBDD H2.");
+        System.out.println("5 - Por cada ciudad realizamos una peticion.");
+        System.out.println("6 - Guardar los datos de las 7 peticiones en el fichero CSV.");
+        System.out.println("7 - Mostrar datos Predicciones principales ciudades desde memoria");
+        System.out.println("8 - Guardar Predicciones en la BBDD H2");
+        System.out.println("9 - Mostrar datos por pantalla de BBDD H2");
+        System.out.println("10 - SALIR.");
+        try {
+            opcion = Integer.parseInt(sc.nextLine());
+        } catch (Exception e) {
+        }
+        return opcion;
     }
 
-    public static void main(String[] args) {
-        System.out.println(new App().getGreeting());
+    public static void Menu(int opcion, ConexionH2 conexionH2) {
 
+        switch (opcion) {
+            case 1: // Conectar BBDD H2.
+                if (conn == null) {
+                    conn = conexionH2.obtenerConexion();
+                } else {
+                    System.out.println("La conexión ya está establecida.");
+                }
+                System.out.println();
+                break;
+            case 2: // Inyectar tablas en la BBDD H2
+                if (conn != null) {
+                    H2CrearBBDD.crearTablas(conn);
+                } else {
+                    System.out.println("Error. Primero debe de establecerse una conexión.");
+                }
+                System.out.println();
+                break;
+            case 3: // Insertar datos de prueba en la BBDD H2
+                if (conn != null) {
+                    H2GestionPrediccion.insertarDatosPrueba(conn);
+                    System.out.println("Datos de prueba insertados correctamente.");
+                } else {
+                    System.out.println("Error. Primero debe realizarse la conexion la BBDD de H2.");
+                }
+                System.out.println();
+                break;
 
-        /*
-         * 
-         * Crear la BBDD  ******************
-         * 
-         * 
-         */
+            case 4: // Cerrar conexion H2.
+                if (conn == null) {
+                    conexionH2.cerrarConexion();
+                } else {
+                    System.out.println("La conexión ya se encuentra cerrada.");
+                }
+                System.out.println();
+                break;
+            case 5: // Peticiones a la API con las principales ciudades
+                listaPrediccionesCiudadesImportantes = RealizarPeticionesPredicciones();
+                System.out.println();
+                break;
+            case 6: // Guardar los datos de las 7 peticiones en el fichero CSV
+                if (listaPrediccionesCiudadesImportantes != null && descripcionParser != null
+                        && nombreFicheroCSV != null) {
+                    guardarDatosEnCSV(listaPrediccionesCiudadesImportantes, descripcionParser, nombreFicheroCSV);
+                } else {
+                    System.out.println("Primero hay que realizar las peticiones a la API.");
+                }
+                System.out.println();
+                break;
+            case 7: // Mostrar datos Predicciones principales ciudades
+                if (listaPrediccionesCiudadesImportantes != null) {
+                    MostrarDatosPredicciones(listaPrediccionesCiudadesImportantes);
+                } else {
+                    System.out.println("Primero hay que realizar las peticiones a la API.");
+                }
+                System.out.println();
+                break;
+            case 8: // Guardar Predicciones en la BBDD H2.
+                if (listaPrediccionesCiudadesImportantes != null) {
+                    GuardarDatosPrediccionesEnH2(listaPrediccionesCiudadesImportantes);
+                } else {
+                    System.out.println("Primero hay que realizar las peticiones a la API.");
+                }
+                System.out.println();
+                break;
+            case 9: // Mostrar datos por pantalla de BBDD H2.
+                MostrarPrediccionesDeBBDDH2(listaPrediccionesCiudadesImportantes);
+                break;
+            default:
+                break;
+        }
+    }
 
+    public static List<PrediccionConcello> RealizarPeticionesPredicciones() {
+        List<PrediccionConcello> listaPrediccionesCiudadesImportantes = null;
+        try {
+            // Por cada ciudad realizamos una peticion, guardamos el objeto
+            // PrediccionConcello y lo agregamos a una lista pera luego almacenar los datos
+            // en el fichero CSV.
+            listaPrediccionesCiudadesImportantes = new ArrayList<PrediccionConcello>();
+            for (Entry entry : ciudadesImportantes.entrySet()) {
+                String urlCompleta = peticionApiBase + entry.getValue() + peticionApiLocale;
+                PrediccionConcello prediccion = gestion.obtenerPrediccion(urlCompleta);
+                if (prediccion != null) {
+                    listaPrediccionesCiudadesImportantes.add(prediccion);
+                }
+                try {
+                    // Realizo una espera de medio segundo entre cada petición para no saturar el
+                    // servidor, si se realizan muy rápido a veces me devuelve una HTTP Response 500
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                int idconcelloPrediccion = -1;
+                try {
+                    idconcelloPrediccion = prediccion.getIdConcello();
+                } catch (Exception e) {
+                }
+                System.out.println("Agregada Prediccion con id de concello: " + idconcelloPrediccion);
+            }
+            System.out.println("Datos de predicciones guardados correctamente en memoria.");
+        } catch (Exception e) {
+            System.out.println("Error. Ha habido un error al obtener las Predicciones.");
+        }
 
+        return listaPrediccionesCiudadesImportantes;
+    }
 
-        // Strings con los datos que voy a utilizar, como por ejemplo las rutas
-        // -------------
-        // Rutas ficheros con datos JSON, ruta común
-        String rutaPaqueteGestionJSON = "app/src/main/java/adat_proyecto_json_wendel/gestion/gestionJSON/dataJson/";
-        // Nombre fichero Json con valores de las descripciones
-        String rutaDescripcionesPredicciones = rutaPaqueteGestionJSON + "descripciones.json";
-        // Nombre fichero Json con la lista de id de los concellos
-        String rutaListaIdConcellos = rutaPaqueteGestionJSON + "listaIdConcellos.json";
-        // Nombre fichero para guardar el CSV
-        String nombreFicheroCSV = "25-11-2023-galicia.csv";
-        // Ruta base de la peticion a la api, despues de idConc= tendremos que indicar el id de un concello
-        String peticionApiBase = "https://servizos.meteogalicia.gal/mgrss/predicion/jsonPredConcellos.action?idConc=";
-        // Ruta que va al final de la peticion con el parametro del idioma en gallego
-        String peticionApiLocale = "&request_locale=gl";
-        // -----------------------------------------------------------
+    public static void MostrarPrediccionesDeBBDDH2(List<PrediccionConcello> predicciones) {
+        for (PrediccionConcello pr : predicciones) {
+            if (pr != null) {
+                H2GestionPrediccion.MostrarDatosTablasPorIdPrediccion(conn, pr.getIdConcello());
+            }
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
-        // Instanciar los PARSER de los JSON -------------------
-        // Instanciar el parser con la ruta del JSON de las descripciones
-        DescripcionParser descripcionParser = new DescripcionParser(rutaDescripcionesPredicciones);
+    public static void GuardarDatosPrediccionesEnH2(List<PrediccionConcello> predicciones) {
+        for (PrediccionConcello pr : predicciones) {
+            if (pr != null) {
+                // gestion.mostrarDatosPrediccion(pr);
+                H2GestionPrediccion.insertarDatosPrediccion(conn, pr);
+            }
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            int idConcello = -1;
+            try {
+                idConcello = pr.getIdConcello();
+            } catch (Exception e) {
+            }
+            System.out.println("Guardada Prediccion con id: " + idConcello + " en BBDD H2.");
+        }
+    }
 
-        // Instanciar la clase de GestionPrediccion para obtener las predicciones de una
-        // peticion a la API
-        GestionPrediccion gestion = new GestionPrediccion(descripcionParser);
-
-        // Crear lista de Predicciones, realizar peticiones y guardar los datos en la
-        // Lista ------------
-        // Creo una lista de PrediccionConcello
-        List<PrediccionConcello> listaPrediccionesCiudadesImportantes = new ArrayList<>();
-
-        // Devuelve mapa con las ciudades principales en las que voy a realizar las
-        // peticiones a la api, en este mapa estan guardados los id de esas ciudades
-        Map<String, String> ciudadesImportantes = Metodos.getMapCiudadesPrincipales();
-
-        // Por cada ciudad realizamos una peticion, guardamos el objeto
-        // PrediccionConcello y lo agregamos a una lista pera luego almacenar los datos
-        // en el fichero CSV.
-        for (Entry entry : ciudadesImportantes.entrySet()) {
-            String urlCompleta = peticionApiBase + entry.getValue() + peticionApiLocale;
-            PrediccionConcello prediccion = gestion.obtenerPrediccion(urlCompleta);
-            if (prediccion != null) {
-                listaPrediccionesCiudadesImportantes.add(prediccion);
-
-
-                /*
-                 * Guardar cada Prediccion en la BBDD ************************************
-                 */
-
-
-
-
-                gestion.mostrarDatosPrediccion(prediccion);
+    public static void MostrarDatosPredicciones(List<PrediccionConcello> predicciones) {
+        for (PrediccionConcello pr : predicciones) {
+            if (pr != null) {
+                gestion.mostrarDatosPrediccion(pr);
             }
             try {
                 // Realizo una espera de medio segundo entre cada petición para no saturar el
@@ -93,14 +233,27 @@ public class App {
                 e.printStackTrace();
             }
         }
-        // ----------------------------------------------------------------------------------------
+    }
 
-        // Guardar los datos de las 7 peticiones en el fichero CSV
-        guardarDatosEnCSV(listaPrediccionesCiudadesImportantes, descripcionParser, nombreFicheroCSV);
+    public static void main(String[] args) {
 
-        
+        // Instanciar clase con metodos de conexión a la base de datos H2
+        ConexionH2 conexionH2 = new ConexionH2();
+
+        // Instancia de Scanner
+        Scanner sc = new Scanner(System.in);
+
+        // Bucle para mostrar menú y gestionar las opciones según el número introducido
+        // por teclado
+        int op = -1;
+        while (op != SALIR) {
+            op = OpcionesMenu(sc);
+            Menu(op, conexionH2);
+        }
+
         // ----------------------------
-        // Parser para obtener los id de los concellos, esto lo he agregado a mayores para poder obtener la prediccion por un concello buscando por su nombre.
+        // Parser para obtener los id de los concellos, esto lo he agregado a mayores
+        // para poder obtener la prediccion por un concello buscando por su nombre.
         // ConcellosParser concellosParser = new ConcellosParser(rutaListaIdConcellos);
         // ------------------------------------------------------
 
@@ -124,11 +277,16 @@ public class App {
     }
 
     /**
-     * Guarda los datos de las predicciones de ciudades importantes en un archivo CSV.
+     * Guarda los datos de las predicciones de ciudades importantes en un archivo
+     * CSV.
      *
-     * @param listaPrediccionesCiudadesImportantes Lista de predicciones de ciudades importantes.
-     * @param descripcionParser Objeto utilizado para obtener descripciones según códigos de ceo y viento.
-     * @param nombreFicheroCSV Nombre del archivo CSV donde se guardarán los datos.
+     * @param listaPrediccionesCiudadesImportantes Lista de predicciones de ciudades
+     *                                             importantes.
+     * @param descripcionParser                    Objeto utilizado para obtener
+     *                                             descripciones según códigos de
+     *                                             ceo y viento.
+     * @param nombreFicheroCSV                     Nombre del archivo CSV donde se
+     *                                             guardarán los datos.
      */
     public static void guardarDatosEnCSV(
             List<PrediccionConcello> listaPrediccionesCiudadesImportantes,
@@ -140,7 +298,8 @@ public class App {
             if (listaPrediccionesCiudadesImportantes != null) {
 
                 // Obtener datos de la predicción en formato CSV
-                List<String[]> datos = GestionCSVWriter.getDatosPrediccionesEnCSV(listaPrediccionesCiudadesImportantes, descripcionParser);
+                List<String[]> datos = GestionCSVWriter.getDatosPrediccionesEnCSV(listaPrediccionesCiudadesImportantes,
+                        descripcionParser);
 
                 // Escribir los datos en el fichero CSV
                 GestionCSVWriter.crearCSV(nombreFicheroCSV, datos);
