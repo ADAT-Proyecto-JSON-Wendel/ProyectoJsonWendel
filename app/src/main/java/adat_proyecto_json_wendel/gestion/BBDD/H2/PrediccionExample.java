@@ -1,4 +1,4 @@
-package adat_proyecto_json_wendel.gestion.BBDD;
+package adat_proyecto_json_wendel.gestion.BBDD.H2;
 
 import java.util.ArrayList;
 import java.util.List;

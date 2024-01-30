@@ -4,16 +4,19 @@
 package adat_proyecto_json_wendel;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
 
-import adat_proyecto_json_wendel.gestion.BBDD.ConexionH2;
-import adat_proyecto_json_wendel.gestion.BBDD.H2CrearBBDD;
-import adat_proyecto_json_wendel.gestion.BBDD.H2GestionPrediccion;
-import adat_proyecto_json_wendel.gestion.BBDD.PrediccionExample;
+import adat_proyecto_json_wendel.gestion.BBDD.H2.ConexionH2;
+import adat_proyecto_json_wendel.gestion.BBDD.H2.H2CrearBBDD;
+import adat_proyecto_json_wendel.gestion.BBDD.H2.H2GestionPrediccion;
+import adat_proyecto_json_wendel.gestion.BBDD.H2.PrediccionExample;
+import adat_proyecto_json_wendel.gestion.BBDD.MYSQL.ConexionMYSQL;
+import adat_proyecto_json_wendel.gestion.BBDD.MYSQL.GestionMYSQL;
 import adat_proyecto_json_wendel.gestion.gestionCSV.GestionCSVWriter;
 import adat_proyecto_json_wendel.gestion.gestionJSON.ConcellosParser;
 import adat_proyecto_json_wendel.gestion.gestionJSON.DescripcionParser;
@@ -23,7 +26,7 @@ import adat_proyecto_json_wendel.util.Metodos;
 
 public class App {
 
-    public static int SALIR = 10;
+    public static int SALIR = 13;
 
     // Strings con los datos que voy a utilizar, como por ejemplo las rutas
     // -------------
@@ -57,12 +60,16 @@ public class App {
     // Creo una lista de PrediccionConcello
     public static List<PrediccionConcello> listaPrediccionesCiudadesImportantes = null;
 
-    public static Connection conn;
+    // Instanciar gestion MYSQL
+    public static GestionMYSQL gestionMYSQL = new GestionMYSQL();
+
+    public static Connection connH2;
+    public static Connection connMYSQL;
 
     public static int OpcionesMenu(Scanner sc) {
         int opcion = -1;
         System.out.println("1 - Conectar BBDD H2.");
-        System.out.println("2 - Inyectar BBDD H2.");
+        System.out.println("2 - Crear Tablas en BBDD H2.");
         System.out.println("3 - Insertar datos de prueba en la BBDD H2.");
         System.out.println("4 - Cerrar conexion BBDD H2.");
         System.out.println("5 - Por cada ciudad realizamos una peticion.");
@@ -70,7 +77,10 @@ public class App {
         System.out.println("7 - Mostrar datos Predicciones principales ciudades desde memoria");
         System.out.println("8 - Guardar Predicciones en la BBDD H2");
         System.out.println("9 - Mostrar datos por pantalla de BBDD H2");
-        System.out.println("10 - SALIR.");
+        System.out.println("10.- Conexion BBDD MYSQL");
+        System.out.println("11.- Cerrar conexion MYSQL");
+        System.out.println("12.- Insertar concello prueba");
+        System.out.println("13 - SALIR.");
         try {
             opcion = Integer.parseInt(sc.nextLine());
         } catch (Exception e) {
@@ -78,28 +88,28 @@ public class App {
         return opcion;
     }
 
-    public static void Menu(int opcion, ConexionH2 conexionH2) {
+    public static void Menu(int opcion, ConexionH2 conexionH2, ConexionMYSQL conexionMYSQL) {
 
         switch (opcion) {
             case 1: // Conectar BBDD H2.
-                if (conn == null) {
-                    conn = conexionH2.obtenerConexion();
+                if (connH2 == null) {
+                    connH2 = conexionH2.obtenerConexion();
                 } else {
                     System.out.println("La conexión ya está establecida.");
                 }
                 System.out.println();
                 break;
             case 2: // Inyectar tablas en la BBDD H2
-                if (conn != null) {
-                    H2CrearBBDD.crearTablas(conn);
+                if (connH2 != null) {
+                    H2CrearBBDD.crearTablas(connH2);
                 } else {
                     System.out.println("Error. Primero debe de establecerse una conexión.");
                 }
                 System.out.println();
                 break;
             case 3: // Insertar datos de prueba en la BBDD H2
-                if (conn != null) {
-                    H2GestionPrediccion.insertarDatosPrueba(conn);
+                if (connH2 != null) {
+                    H2GestionPrediccion.insertarDatosPrueba(connH2);
                     System.out.println("Datos de prueba insertados correctamente.");
                 } else {
                     System.out.println("Error. Primero debe realizarse la conexion la BBDD de H2.");
@@ -108,7 +118,7 @@ public class App {
                 break;
 
             case 4: // Cerrar conexion H2.
-                if (conn == null) {
+                if (connH2 == null) {
                     conexionH2.cerrarConexion();
                 } else {
                     System.out.println("La conexión ya se encuentra cerrada.");
@@ -146,9 +156,34 @@ public class App {
                 break;
             case 9: // Mostrar datos por pantalla de BBDD H2.
                 MostrarPrediccionesDeBBDDH2(listaPrediccionesCiudadesImportantes);
+                System.out.println();
+                break;
+            case 10: // Obtener conexion MYSQL
+                conectarMYSQL(conexionMYSQL);
+                System.out.println();
+                break;
+            case 11: // Cerrar conexion MYSQL
+                connMYSQL = ConexionMYSQL.cerrarConexion();
+                System.out.println();
+                break;
+            case 12:
+                try {
+                    gestionMYSQL.insertarConcello(1, "ourense", connMYSQL);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+                System.out.println();
                 break;
             default:
                 break;
+        }
+    }
+
+    public static void conectarMYSQL(ConexionMYSQL conexionMYSQL) {
+        try {
+            connMYSQL = conexionMYSQL.getConnection();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
@@ -190,7 +225,7 @@ public class App {
     public static void MostrarPrediccionesDeBBDDH2(List<PrediccionConcello> predicciones) {
         for (PrediccionConcello pr : predicciones) {
             if (pr != null) {
-                H2GestionPrediccion.MostrarDatosTablasPorIdPrediccion(conn, pr.getIdConcello());
+                H2GestionPrediccion.MostrarDatosTablasPorIdPrediccion(connH2, pr.getIdConcello());
             }
             try {
                 Thread.sleep(500);
@@ -204,7 +239,7 @@ public class App {
         for (PrediccionConcello pr : predicciones) {
             if (pr != null) {
                 // gestion.mostrarDatosPrediccion(pr);
-                H2GestionPrediccion.insertarDatosPrediccion(conn, pr);
+                H2GestionPrediccion.insertarDatosPrediccion(connH2, pr);
             }
             try {
                 Thread.sleep(50);
@@ -240,6 +275,9 @@ public class App {
         // Instanciar clase con metodos de conexión a la base de datos H2
         ConexionH2 conexionH2 = new ConexionH2();
 
+        // Instanciar clase conexion MYSQL
+        ConexionMYSQL conexionMYSQL = new ConexionMYSQL();
+
         // Instancia de Scanner
         Scanner sc = new Scanner(System.in);
 
@@ -248,7 +286,7 @@ public class App {
         int op = -1;
         while (op != SALIR) {
             op = OpcionesMenu(sc);
-            Menu(op, conexionH2);
+            Menu(op, conexionH2, conexionMYSQL);
         }
 
         // ----------------------------
