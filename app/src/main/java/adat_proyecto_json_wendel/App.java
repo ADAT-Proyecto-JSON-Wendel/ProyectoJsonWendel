@@ -14,19 +14,23 @@ import java.util.Scanner;
 import adat_proyecto_json_wendel.gestion.BBDD.H2.ConexionH2;
 import adat_proyecto_json_wendel.gestion.BBDD.H2.H2CrearBBDD;
 import adat_proyecto_json_wendel.gestion.BBDD.H2.H2GestionPrediccion;
-import adat_proyecto_json_wendel.gestion.BBDD.H2.PrediccionExample;
 import adat_proyecto_json_wendel.gestion.BBDD.MYSQL.ConexionMYSQL;
 import adat_proyecto_json_wendel.gestion.BBDD.MYSQL.GestionMYSQL;
+import adat_proyecto_json_wendel.gestion.BBDD.MYSQL.LeerSQL;
 import adat_proyecto_json_wendel.gestion.gestionCSV.GestionCSVWriter;
 import adat_proyecto_json_wendel.gestion.gestionJSON.ConcellosParser;
 import adat_proyecto_json_wendel.gestion.gestionJSON.DescripcionParser;
 import adat_proyecto_json_wendel.gestion.gestionJSON.GestionPrediccion;
+import adat_proyecto_json_wendel.model.Cielo;
+import adat_proyecto_json_wendel.model.DiaPrediccion;
 import adat_proyecto_json_wendel.model.PrediccionConcello;
+import adat_proyecto_json_wendel.model.ProbabilidadChoiva;
+import adat_proyecto_json_wendel.model.Vento;
 import adat_proyecto_json_wendel.util.Metodos;
 
 public class App {
 
-    public static int SALIR = 13;
+    public static int SALIR = 17;
 
     // Strings con los datos que voy a utilizar, como por ejemplo las rutas
     // -------------
@@ -66,6 +70,10 @@ public class App {
     public static Connection connH2;
     public static Connection connMYSQL;
 
+    public static final String rutaCrearTablasMYSQL = "app\\src\\main\\java\\adat_proyecto_json_wendel\\gestion\\BBDD\\MYSQL\\SQL\\CrearTablas.sql";
+    public static final String rutaEliminarDatosTablasMYSQL = "app\\src\\main\\java\\adat_proyecto_json_wendel\\gestion\\BBDD\\MYSQL\\SQL\\EliminarDatosTablas.sql";
+    public static final String rutaInsertarDatosPruebaMYSQL = "app\\src\\main\\java\\adat_proyecto_json_wendel\\gestion\\BBDD\\MYSQL\\SQL\\InsertarDatosPrueba.sql";
+
     public static int OpcionesMenu(Scanner sc) {
         int opcion = -1;
         System.out.println("1 - Conectar BBDD H2.");
@@ -80,7 +88,11 @@ public class App {
         System.out.println("10.- Conexion BBDD MYSQL");
         System.out.println("11.- Cerrar conexion MYSQL");
         System.out.println("12.- Insertar concello prueba");
-        System.out.println("13 - SALIR.");
+        System.out.println("13.- Crear Tablas en BBDD MYSQL");
+        System.out.println("14.- Insertar datos pruebas en BBDD MYSQL");
+        System.out.println("15.- Eliminar datos de todas las tablas.");
+        System.out.println("16.- Insertar datos Predicciones desde cache a BBDD MYSQL.");
+        System.out.println("17 - SALIR.");
         try {
             opcion = Integer.parseInt(sc.nextLine());
         } catch (Exception e) {
@@ -166,11 +178,33 @@ public class App {
                 connMYSQL = ConexionMYSQL.cerrarConexion();
                 System.out.println();
                 break;
-            case 12:
-                try {
-                    gestionMYSQL.insertarConcello(1, "ourense", connMYSQL);
-                } catch (SQLException e) {
-                    e.printStackTrace();
+            case 12: // Insertar Concello prueba
+                GestionMYSQL.insertarConcello(1, "ourense", connMYSQL);
+                System.out.println();
+                break;
+            case 13: // Crear Tablas en BBDD MYSQL
+                if (LeerSQL.EjecutarSentenciasFicheroSQL(connMYSQL, rutaCrearTablasMYSQL)) {
+                    System.out.println("Tablas creadas correctamente.");
+                }
+                System.out.println();
+                break;
+            case 14: // Insertar datos pruebas en BBDD MYSQL
+                if (LeerSQL.EjecutarSentenciasFicheroSQL(connMYSQL, rutaInsertarDatosPruebaMYSQL)) {
+                    System.out.println("Datos de prueba insertados correctamente.");
+                }
+                System.out.println();
+                break;
+            case 15: // Eliminar datos de todas las tablas.
+                if (LeerSQL.EjecutarSentenciasFicheroSQL(connMYSQL, rutaEliminarDatosTablasMYSQL)) {
+                    System.out.println("Datos de las tablas eliminados correctamente.");
+                }
+                System.out.println();
+                break;
+            case 16: // Insertar datos Predicciones desde cache a BBDD MYSQL
+                if (listaPrediccionesCiudadesImportantes != null) {
+                    H2GestionPrediccion.insertaListaPredicciones(connMYSQL, listaPrediccionesCiudadesImportantes);
+                } else {
+                    System.out.println("La lista de predicciones esta vacia, primero debes realizar las peticiones.");
                 }
                 System.out.println();
                 break;

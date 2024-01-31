@@ -7,6 +7,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 
+import com.mysql.cj.jdbc.PreparedStatementWrapper;
+
 import adat_proyecto_json_wendel.model.Cielo;
 import adat_proyecto_json_wendel.model.DiaPrediccion;
 import adat_proyecto_json_wendel.model.PrediccionConcello;
@@ -15,6 +17,19 @@ import adat_proyecto_json_wendel.model.TemperaturasFranxa;
 import adat_proyecto_json_wendel.model.Vento;
 
 public class H2GestionPrediccion {
+
+    public static void insertaListaPredicciones(Connection conn, List<PrediccionConcello> listaPredicciones) {
+        try {
+            for (PrediccionConcello prediccionConcello : listaPredicciones) {
+                insertarDatosPrediccion(conn, prediccionConcello);
+            }
+        } catch (Exception e) {
+            System.out.println("Error al insertar las predicciones.");
+            e.printStackTrace();
+        }
+
+    }
+
 
     public static void insertarDatosPrediccion(Connection conexion, PrediccionConcello prediccion) {
         try {
@@ -25,13 +40,118 @@ public class H2GestionPrediccion {
             String insertTemperaturasFranxa = "INSERT INTO TemperaturasFranxa (idPrediccion, manha, tarde, noite) VALUES (?, ?, ?, ?)";
             String insertVento = "INSERT INTO Vento (idPrediccion, manha, tarde, noite) VALUES (?, ?, ?, ?)";
 
-            try (PreparedStatement stmtConcello = conexion.prepareStatement(insertConcello);
-                    PreparedStatement stmtPrediccion = conexion.prepareStatement(insertPrediccion,
-                            Statement.RETURN_GENERATED_KEYS);
-                    PreparedStatement stmtCielo = conexion.prepareStatement(insertCielo);
-                    PreparedStatement stmtProbabilidadChoiva = conexion.prepareStatement(insertProbabilidadChoiva);
-                    PreparedStatement stmtTemperaturasFranxa = conexion.prepareStatement(insertTemperaturasFranxa);
-                    PreparedStatement stmtVento = conexion.prepareStatement(insertVento)) {
+            try (PreparedStatement stmtConcello = conexion.prepareStatement(insertConcello, Statement.RETURN_GENERATED_KEYS);
+                 PreparedStatement stmtPrediccion = conexion.prepareStatement(insertPrediccion, Statement.RETURN_GENERATED_KEYS);
+                 PreparedStatement stmtCielo = conexion.prepareStatement(insertCielo);
+                 PreparedStatement stmtProbabilidadChoiva = conexion.prepareStatement(insertProbabilidadChoiva);
+                 PreparedStatement stmtTemperaturasFranxa = conexion.prepareStatement(insertTemperaturasFranxa);
+                 PreparedStatement stmtVento = conexion.prepareStatement(insertVento)) {
+
+                // Insertar datos del concello
+                stmtConcello.setInt(1, prediccion.getIdConcello());
+                stmtConcello.setString(2, prediccion.getNome());
+                stmtConcello.executeUpdate();
+
+                List<DiaPrediccion> listaPredDiaConcello;
+                listaPredDiaConcello = prediccion.getListaPredDiaConcello();
+
+                listaPredDiaConcello.forEach(pred -> {
+                    try {
+                        // Insertar datos de Predicciones
+                        stmtPrediccion.setInt(1, prediccion.getIdConcello());
+                        String dataPrediccion = pred.getDataPredicion();
+                        stmtPrediccion.setString(2, (dataPrediccion != null) ? dataPrediccion : "0000-00-00");
+                        Integer nivelAviso = pred.getNivelAviso();
+                        stmtPrediccion.setInt(3, (nivelAviso != null) ? nivelAviso.intValue() : -1);
+                        Integer predTMax = pred.gettMax();
+                        stmtPrediccion.setInt(4, (predTMax != null) ? predTMax.intValue() : -1);
+                        Integer predTMin = pred.gettMin();
+                        stmtPrediccion.setInt(5, (predTMin != null) ? predTMin.intValue() : -1);
+                        Integer predUvMax = pred.getUvMax();
+                        stmtPrediccion.setInt(6, (predUvMax != null) ? predUvMax.intValue() : -1);
+                        stmtPrediccion.executeUpdate();
+
+                        // Obtener la clave generada para Predicciones
+                        try (ResultSet generatedPredKeys = stmtPrediccion.getGeneratedKeys()) {
+                            if (generatedPredKeys.next()) {
+                                int idPrediccion = generatedPredKeys.getInt(1);
+
+                                // Insertar datos en Cielo
+                                stmtCielo.setInt(1, idPrediccion);
+                                Cielo ceo = pred.getCeo();
+                                Integer ceoManha = (ceo != null) ? ceo.getManha() : null;
+                                stmtCielo.setInt(2, (ceoManha != null) ? ceoManha.intValue() : -1);
+                                Integer ceoTarde = (ceo != null) ? ceo.getTarde() : null;
+                                stmtCielo.setInt(3, (ceoTarde != null) ? ceoTarde.intValue() : -1);
+                                Integer ceoNoite = (ceo != null) ? ceo.getNoite() : null;
+                                stmtCielo.setInt(4, (ceoNoite != null) ? ceoNoite.intValue() : -1);
+                                stmtCielo.executeUpdate();
+
+                                // Insertar datos en ProbabilidadChoiva
+                                stmtProbabilidadChoiva.setInt(1, idPrediccion);
+                                ProbabilidadChoiva probabilidadChoiva = pred.getPchoiva();
+                                Integer pChoivaManha = (probabilidadChoiva != null) ? probabilidadChoiva.getManha() : null;
+                                stmtProbabilidadChoiva.setInt(2, (pChoivaManha != null) ? pChoivaManha.intValue() : -1);
+                                Integer pChoivaTarde = (probabilidadChoiva != null) ? probabilidadChoiva.getTarde() : null;
+                                stmtProbabilidadChoiva.setInt(3, (pChoivaTarde != null) ? pChoivaTarde.intValue() : -1);
+                                Integer pChoivaNoite = (probabilidadChoiva != null) ? probabilidadChoiva.getNoite() : null;
+                                stmtProbabilidadChoiva.setInt(4, (pChoivaNoite != null) ? pChoivaNoite.intValue() : -1);
+                                stmtProbabilidadChoiva.executeUpdate();
+
+                                // Insertar datos en TemperaturasFranxa
+                                stmtTemperaturasFranxa.setInt(1, idPrediccion);
+                                TemperaturasFranxa tmaxFranxa = pred.getTmaxFranxa();
+                                stmtTemperaturasFranxa.setInt(2, (tmaxFranxa != null) ? tmaxFranxa.getManha() : -1);
+                                stmtTemperaturasFranxa.setInt(3, (tmaxFranxa != null) ? tmaxFranxa.getTarde() : -1);
+                                stmtTemperaturasFranxa.setInt(4, (tmaxFranxa != null) ? tmaxFranxa.getNoite() : -1);
+                                stmtTemperaturasFranxa.executeUpdate();
+
+                                // Insertar datos en Vento
+                                stmtVento.setInt(1, idPrediccion);
+                                Vento vento = pred.getVento();
+                                Integer ventoManha = (vento != null) ? vento.getManha() : null;
+                                stmtVento.setInt(2, (ventoManha != null) ? ventoManha.intValue() : -1);
+                                Integer ventoTarde = (vento != null) ? vento.getTarde() : null;
+                                stmtVento.setInt(3, (ventoTarde != null) ? ventoTarde.intValue() : -1);
+                                Integer ventoNoite = (vento != null) ? vento.getNoite() : null;
+                                stmtVento.setInt(4, (ventoNoite != null) ? ventoNoite.intValue() : -1);
+                                stmtVento.executeUpdate();
+                            }
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                });
+                System.out.println("Datos de prueba insertados correctamente.");
+            } catch (SQLException e) {
+                System.out.println("Error al insertar datos de prueba.");
+                e.printStackTrace();
+            }
+        } catch (Exception e) {
+            System.out.println("Error al preparar las sentencias.");
+            e.printStackTrace();
+        }
+    }
+
+
+/* 
+    public static void insertarDatosPrediccion(Connection conexion, PrediccionConcello prediccion) {
+        try {
+            String insertConcello = "INSERT INTO Concellos (idConcello, nome) VALUES (?, ?)";
+            String insertPrediccion = "INSERT INTO Predicciones (idConcello, dataPredicion, nivelAviso, tMax, tMin, uvMax) VALUES (?, ?, ?, ?, ?, ?)";
+            String insertCielo = "INSERT INTO Cielo (idPrediccion, manha, tarde, noite) VALUES (?, ?, ?, ?)";
+            String insertProbabilidadChoiva = "INSERT INTO ProbabilidadChoiva (idPrediccion, manha, tarde, noite) VALUES (?, ?, ?, ?)";
+            String insertTemperaturasFranxa = "INSERT INTO TemperaturasFranxa (idPrediccion, manha, tarde, noite) VALUES (?, ?, ?, ?)";
+            String insertVento = "INSERT INTO Vento (idPrediccion, manha, tarde, noite) VALUES (?, ?, ?, ?)";
+
+            try (PreparedStatement stmtConcello = conexion.prepareStatement(insertConcello, Statement.RETURN_GENERATED_KEYS);
+             PreparedStatement stmtPrediccion = conexion.prepareStatement(insertPrediccion, Statement.RETURN_GENERATED_KEYS);
+             PreparedStatement stmtCielo = conexion.prepareStatement(insertCielo);
+             PreparedStatement stmtProbabilidadChoiva = conexion.prepareStatement(insertProbabilidadChoiva);
+             PreparedStatement stmtTemperaturasFranxa = conexion.prepareStatement(insertTemperaturasFranxa);
+             PreparedStatement stmtVento = conexion.prepareStatement(insertVento)) {
 
                 // Insertar datos del concello
                 stmtConcello.setInt(1, prediccion.getIdConcello());
@@ -137,6 +257,8 @@ public class H2GestionPrediccion {
             e.printStackTrace();
         }
     }
+
+    */
 
     public static void insertarDatosPrueba(Connection conexion) {
         try {

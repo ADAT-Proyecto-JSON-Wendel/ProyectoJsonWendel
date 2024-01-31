@@ -8,7 +8,8 @@ import java.util.Properties;
 public class ConexionMYSQL {
 
         private static final String userName = "root";
-        private static final String password = "abc123.";
+        // private static final String password = "abc123.";
+        private static final String password = "";
         private static final String dbms = "mysql";
         private static final String serverName = "127.0.0.1";
         private static final String portNumber = "3306";
@@ -54,19 +55,17 @@ public class ConexionMYSQL {
         }
 
         public Connection getConnection() throws SQLException {
-
                 if (conn != null) {
                         return conn;
                 }
                 Properties connectionProps = new Properties();
                 connectionProps.put("user", userName);
                 connectionProps.put("password", password);
-
                 if (dbms.equals("mysql")) {
                         conn = DriverManager.getConnection(
                                         "jdbc:" + dbms + "://" +
                                                         serverName +
-                                                        ":" + portNumber + "/",
+                                                        ":" + portNumber + "/" + dbName,
                                         connectionProps);
                 } else if (dbms.equals("derby")) {
                         conn = DriverManager.getConnection(
@@ -75,7 +74,7 @@ public class ConexionMYSQL {
                                                         ";create=true",
                                         connectionProps);
                 }
-                System.out.println("Conexion establecida.");
+                System.out.println("Conexion establecida en la base de datos MYSQL.\n\tServidor: " + URL);
                 return conn;
         };
 
