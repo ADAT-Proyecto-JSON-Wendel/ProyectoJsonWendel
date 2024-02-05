@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS Cielo (
 FOREIGN KEY (idPrediccion) REFERENCES Predicciones(idPrediccion)
 );
 
-CREATE TABLE IF NOT EXISTS ProbabilidadChoiva (
+CREATE TABLE IF NOT EXISTS ProbabilidadeChoiva (
 	idProbabilidadeChoiva INT AUTO_INCREMENT PRIMARY KEY,
 	idPrediccion INT,
 	manha INT,

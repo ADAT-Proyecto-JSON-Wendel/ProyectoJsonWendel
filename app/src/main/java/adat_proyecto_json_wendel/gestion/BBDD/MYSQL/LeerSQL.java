@@ -7,35 +7,35 @@ import java.sql.Statement;
 
 public class LeerSQL {
 
-    public static boolean EjecutarSentenciasFicheroSQL(Connection conn, String rutaFichero) {
-        if (rutaFichero.trim() != null) {
-            try (BufferedReader bf = new BufferedReader(new FileReader(rutaFichero))) {
-                StringBuffer query = new StringBuffer();
-                String linea;
-                while ((linea = bf.readLine()) != null) {
-                    if (!linea.trim().isEmpty() && !linea.trim().startsWith("--")) {
-                        query.append(linea.trim());
-                    }
+    public static boolean ejecutarSentenciasFicheroSQL(Connection conn, String rutaFichero) {
+        try (BufferedReader bf = new BufferedReader(new FileReader(rutaFichero))) {
+            StringBuilder query = new StringBuilder();
+            String linea;
+            while ((linea = bf.readLine()) != null) {
+                if (!linea.trim().isEmpty() && !linea.trim().startsWith("--")) {
+                    query.append(linea.trim());
+
+                    // Si la línea termina con ';', ejecutar la sentencia
                     if (linea.trim().endsWith(";")) {
-                        EjecutarSentencia(conn, query.toString());
-                        // Reiniciar StringBuffer
+                        ejecutarSentencia(conn, query.toString());
+                        // Reiniciar StringBuilder
                         query.setLength(0);
                     }
                 }
-            } catch (Exception e) {
-                return false;
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
         return true;
     }
 
-    public static void EjecutarSentencia(Connection conn, String query) {
-        try (Statement statement = conn.prepareStatement(query)) {
+    public static void ejecutarSentencia(Connection conn, String query) {
+        try (Statement statement = conn.createStatement()) {
             statement.executeUpdate(query);
         } catch (Exception e) {
-            System.out.println("Error al ejecutar al ejecutar la sentencia SQL: " + query);
-            // e.printStackTrace();
+            System.out.println("Error al ejecutar la sentencia SQL: " + query);
+            e.printStackTrace();
         }
     }
-
 }

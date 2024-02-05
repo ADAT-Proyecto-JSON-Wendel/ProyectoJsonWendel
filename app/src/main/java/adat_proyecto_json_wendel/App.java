@@ -12,7 +12,6 @@ import java.util.Map.Entry;
 import java.util.Scanner;
 
 import adat_proyecto_json_wendel.gestion.BBDD.H2.ConexionH2;
-import adat_proyecto_json_wendel.gestion.BBDD.H2.H2CrearBBDD;
 import adat_proyecto_json_wendel.gestion.BBDD.H2.H2GestionPrediccion;
 import adat_proyecto_json_wendel.gestion.BBDD.MYSQL.ConexionMYSQL;
 import adat_proyecto_json_wendel.gestion.BBDD.MYSQL.GestionMYSQL;
@@ -21,11 +20,7 @@ import adat_proyecto_json_wendel.gestion.gestionCSV.GestionCSVWriter;
 import adat_proyecto_json_wendel.gestion.gestionJSON.ConcellosParser;
 import adat_proyecto_json_wendel.gestion.gestionJSON.DescripcionParser;
 import adat_proyecto_json_wendel.gestion.gestionJSON.GestionPrediccion;
-import adat_proyecto_json_wendel.model.Cielo;
-import adat_proyecto_json_wendel.model.DiaPrediccion;
 import adat_proyecto_json_wendel.model.PrediccionConcello;
-import adat_proyecto_json_wendel.model.ProbabilidadChoiva;
-import adat_proyecto_json_wendel.model.Vento;
 import adat_proyecto_json_wendel.util.Metodos;
 
 public class App {
@@ -71,6 +66,7 @@ public class App {
     public static Connection connMYSQL;
 
     public static final String rutaCrearTablasMYSQL = "app\\src\\main\\java\\adat_proyecto_json_wendel\\gestion\\BBDD\\MYSQL\\SQL\\CrearTablas.sql";
+    public static final String rutaCrearTablasH2 = "app\\src\\main\\java\\adat_proyecto_json_wendel\\gestion\\BBDD\\MYSQL\\SQL\\CrearTablasH2.sql";
     public static final String rutaEliminarDatosTablasMYSQL = "app\\src\\main\\java\\adat_proyecto_json_wendel\\gestion\\BBDD\\MYSQL\\SQL\\EliminarDatosTablas.sql";
     public static final String rutaInsertarDatosPruebaMYSQL = "app\\src\\main\\java\\adat_proyecto_json_wendel\\gestion\\BBDD\\MYSQL\\SQL\\InsertarDatosPrueba.sql";
 
@@ -111,9 +107,12 @@ public class App {
                 }
                 System.out.println();
                 break;
-            case 2: // Inyectar tablas en la BBDD H2
+            case 2: // Crear tablas en la BBDD H2
                 if (connH2 != null) {
-                    H2CrearBBDD.crearTablas(connH2);
+                    if (LeerSQL.ejecutarSentenciasFicheroSQL(connH2, rutaCrearTablasMYSQL)) {
+                        System.out.println("Tablas creadas correctamente.");
+                    }
+                    // H2CrearBBDD.crearTablas(connH2);
                 } else {
                     System.out.println("Error. Primero debe de establecerse una conexión.");
                 }
@@ -183,19 +182,19 @@ public class App {
                 System.out.println();
                 break;
             case 13: // Crear Tablas en BBDD MYSQL
-                if (LeerSQL.EjecutarSentenciasFicheroSQL(connMYSQL, rutaCrearTablasMYSQL)) {
+                if (LeerSQL.ejecutarSentenciasFicheroSQL(connMYSQL, rutaCrearTablasMYSQL)) {
                     System.out.println("Tablas creadas correctamente.");
                 }
                 System.out.println();
                 break;
             case 14: // Insertar datos pruebas en BBDD MYSQL
-                if (LeerSQL.EjecutarSentenciasFicheroSQL(connMYSQL, rutaInsertarDatosPruebaMYSQL)) {
+                if (LeerSQL.ejecutarSentenciasFicheroSQL(connMYSQL, rutaInsertarDatosPruebaMYSQL)) {
                     System.out.println("Datos de prueba insertados correctamente.");
                 }
                 System.out.println();
                 break;
             case 15: // Eliminar datos de todas las tablas.
-                if (LeerSQL.EjecutarSentenciasFicheroSQL(connMYSQL, rutaEliminarDatosTablasMYSQL)) {
+                if (LeerSQL.ejecutarSentenciasFicheroSQL(connMYSQL, rutaEliminarDatosTablasMYSQL)) {
                     System.out.println("Datos de las tablas eliminados correctamente.");
                 }
                 System.out.println();
@@ -259,7 +258,7 @@ public class App {
     public static void MostrarPrediccionesDeBBDDH2(List<PrediccionConcello> predicciones) {
         for (PrediccionConcello pr : predicciones) {
             if (pr != null) {
-                H2GestionPrediccion.MostrarDatosTablasPorIdPrediccion(connH2, pr.getIdConcello());
+                H2GestionPrediccion.MostrarDatosTablasPorIdConcello(connH2, pr.getIdConcello());
             }
             try {
                 Thread.sleep(500);
@@ -270,22 +269,32 @@ public class App {
     }
 
     public static void GuardarDatosPrediccionesEnH2(List<PrediccionConcello> predicciones) {
-        for (PrediccionConcello pr : predicciones) {
-            if (pr != null) {
-                // gestion.mostrarDatosPrediccion(pr);
-                H2GestionPrediccion.insertarDatosPrediccion(connH2, pr);
+        try {
+            for (PrediccionConcello pr : predicciones) {
+                if (pr != null) {
+                    // gestion.mostrarDatosPrediccion(pr);
+                    int idConcello = -1;
+                    try {
+                        idConcello = pr.getIdConcello();
+                    } catch (Exception e) {
+                    }
+                    if (H2GestionPrediccion.insertarDatosPrediccion(connH2, pr)) {
+                        System.out.println("Guardada Prediccion con idConcello: " + idConcello + " en BBDD H2.");
+                    } else {
+                        System.out.println("Error al guardar Prediccion con idConcello: " + idConcello + " en BBDD H2.");
+                    }
+                }
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    System.out.println("Error al guardar las predicciones.");
+                }
+
             }
-            try {
-                Thread.sleep(50);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            int idConcello = -1;
-            try {
-                idConcello = pr.getIdConcello();
-            } catch (Exception e) {
-            }
-            System.out.println("Guardada Prediccion con id: " + idConcello + " en BBDD H2.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Error al guardar las predicciones.");
         }
     }
 
