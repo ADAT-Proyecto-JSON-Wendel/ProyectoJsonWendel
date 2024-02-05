@@ -11,9 +11,8 @@ import adat_proyecto_json_wendel.model.TemperaturasFranxa;
 import adat_proyecto_json_wendel.model.Vento;
 
 public class PrediccionExample {
-    
 
-     public static PrediccionConcello getPrediccionConcelloEjemplo() {
+    public static PrediccionConcello getPrediccionConcelloEjemplo() {
         PrediccionConcello prediccionConcello = new PrediccionConcello();
         prediccionConcello.setIdConcello(1);
         prediccionConcello.setNome("Santiago de Compostela prueba");
@@ -35,7 +34,6 @@ public class PrediccionExample {
         DiaPrediccion dia2 = new DiaPrediccion();
         dia2.setDataPredicion("2024-01-24");
         listaPredicciones.add(dia2);
-
 
         prediccionConcello.setListaPredDiaConcello(listaPredicciones);
 

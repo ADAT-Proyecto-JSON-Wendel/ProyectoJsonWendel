@@ -1,5 +1,3 @@
-DROP SCHEMA IF EXISTS prediccionconcellos;
-
 CREATE SCHEMA IF NOT EXISTS prediccionconcellos;
 
 USE prediccionconcellos;

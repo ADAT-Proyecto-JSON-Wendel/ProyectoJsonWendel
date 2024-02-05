@@ -4,8 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.List;
 
 import adat_proyecto_json_wendel.model.Cielo;
@@ -21,31 +19,37 @@ public class GestionMYSQL {
             String nome,
             Connection conn) {
 
-        String insertString = "INSERT INTO prediccionconcellos.concellos VALUES (?,?)";
+        if (conn != null) {
 
-        try (PreparedStatement insertStatement = conn.prepareStatement(insertString)) {
-            if (!existeConcello(idConcello, conn)) {
-                conn.setAutoCommit(false);
-                insertStatement.setInt(1, idConcello);
-                insertStatement.setString(2, nome);
+            String insertString = "INSERT INTO prediccionconcellos.concellos VALUES (?,?)";
 
-                insertStatement.executeUpdate();
-                conn.commit();
-            }
-            System.out.println("Insertado Concello (" + idConcello + "," + nome + ")");
+            try (PreparedStatement insertStatement = conn.prepareStatement(insertString)) {
+                if (!existeConcello(idConcello, conn)) {
+                    conn.setAutoCommit(false);
+                    insertStatement.setInt(1, idConcello);
+                    insertStatement.setString(2, nome);
 
-        } catch (SQLException e) {
-            System.err.println("Error al insertar Concello:");
-            e.printStackTrace();
-            if (conn != null) {
-                try {
-                    System.err.print("Transaction is being rolled back");
-                    conn.rollback();
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
+                    insertStatement.executeUpdate();
+                    conn.commit();
+                }
+                System.out.println("Insertado Concello (" + idConcello + "," + nome + ")");
+
+            } catch (SQLException e) {
+                System.err.println("Error al insertar Concello:");
+                e.printStackTrace();
+                if (conn != null) {
+                    try {
+                        System.err.print("Transaction is being rolled back");
+                        conn.rollback();
+                    } catch (SQLException ex) {
+                        ex.printStackTrace();
+                    }
                 }
             }
+        } else {
+            System.out.println("Error. La conexión no puede ser null.");
         }
+
     }
 
     public static boolean existeConcello(int idConcello, Connection conn) {

@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 
+import adat_proyecto_json_wendel.gestion.BBDD.MYSQL.GestionMYSQL;
 import adat_proyecto_json_wendel.model.Cielo;
 import adat_proyecto_json_wendel.model.DiaPrediccion;
 import adat_proyecto_json_wendel.model.PrediccionConcello;
@@ -28,7 +29,6 @@ public class H2GestionPrediccion {
 
     }
 
-
     public static boolean insertarDatosPrediccion(Connection conexion, PrediccionConcello prediccion) {
         try {
             String insertConcello = "INSERT INTO Concellos (idConcello, nome) VALUES (?, ?)";
@@ -38,24 +38,39 @@ public class H2GestionPrediccion {
             String insertTemperaturasFranxa = "INSERT INTO TemperaturasFranxa (idPrediccion, manha, tarde, noite) VALUES (?, ?, ?, ?)";
             String insertVento = "INSERT INTO Vento (idPrediccion, manha, tarde, noite) VALUES (?, ?, ?, ?)";
 
-            try (PreparedStatement stmtConcello = conexion.prepareStatement(insertConcello, Statement.RETURN_GENERATED_KEYS);
-                 PreparedStatement stmtPrediccion = conexion.prepareStatement(insertPrediccion, Statement.RETURN_GENERATED_KEYS);
-                 PreparedStatement stmtCielo = conexion.prepareStatement(insertCielo);
-                 PreparedStatement stmtProbabilidadChoiva = conexion.prepareStatement(insertProbabilidadChoiva);
-                 PreparedStatement stmtTemperaturasFranxa = conexion.prepareStatement(insertTemperaturasFranxa);
-                 PreparedStatement stmtVento = conexion.prepareStatement(insertVento)) {
+            // Instanciamos los objetos de las consultas
+            try (PreparedStatement stmtConcello = conexion.prepareStatement(insertConcello,
+                    Statement.RETURN_GENERATED_KEYS);
+                    PreparedStatement stmtPrediccion = conexion.prepareStatement(insertPrediccion,
+                            Statement.RETURN_GENERATED_KEYS);
+                    PreparedStatement stmtCielo = conexion.prepareStatement(insertCielo);
+                    PreparedStatement stmtProbabilidadChoiva = conexion.prepareStatement(insertProbabilidadChoiva);
+                    PreparedStatement stmtTemperaturasFranxa = conexion.prepareStatement(insertTemperaturasFranxa);
+                    PreparedStatement stmtVento = conexion.prepareStatement(insertVento)) {
 
-                // Insertar datos del concello
-                stmtConcello.setInt(1, prediccion.getIdConcello());
-                stmtConcello.setString(2, prediccion.getNome());
-                stmtConcello.executeUpdate();
+                // Comprobar si ya existe el concello antes de insertarlo.
+                try {
+                    if (!GestionMYSQL.existeConcello(prediccion.getIdConcello(), conexion)) {
+                        // Insertar datos del concello
+                        stmtConcello.setInt(1, prediccion.getIdConcello());
+                        stmtConcello.setString(2, prediccion.getNome());
+                        stmtConcello.executeUpdate();
+                    }
+                } catch (Exception e) {
+                    System.out.println("Error al insertar el concello.");
+                    e.printStackTrace();
+                }
 
+                // Lista de Predicción por día, ya que podría haber hasta 3 predicciones para
+                // cada concello en un mismo día.
                 List<DiaPrediccion> listaPredDiaConcello;
                 listaPredDiaConcello = prediccion.getListaPredDiaConcello();
-
+                // Para cada predicción vamos agregar todos los valores correspondientes en los
+                // PreparedStatement "Consultas".
                 listaPredDiaConcello.forEach(pred -> {
                     try {
-                        // Insertar datos de Predicciones
+                        // Insertar datos de Predicciones, comprobamos si hay algún nulo y asignamos
+                        // valores por defecto para evitar posibles errores futuros si hay algún null.
                         stmtPrediccion.setInt(1, prediccion.getIdConcello());
                         String dataPrediccion = pred.getDataPredicion();
                         stmtPrediccion.setString(2, (dataPrediccion != null) ? dataPrediccion : "0000-00-00");
@@ -69,7 +84,9 @@ public class H2GestionPrediccion {
                         stmtPrediccion.setInt(6, (predUvMax != null) ? predUvMax.intValue() : -1);
                         stmtPrediccion.executeUpdate();
 
-                        // Obtener la clave generada para Predicciones
+                        // Obtener la clave generada para Predicciones con el método getGeneratedKeys(),
+                        // esta clave es el id en la tabla y la necesitamos porque está relacionado con
+                        // el resto de tablas.
                         try (ResultSet generatedPredKeys = stmtPrediccion.getGeneratedKeys()) {
                             if (generatedPredKeys.next()) {
                                 int idPrediccion = generatedPredKeys.getInt(1);
@@ -88,11 +105,14 @@ public class H2GestionPrediccion {
                                 // Insertar datos en ProbabilidadChoiva
                                 stmtProbabilidadChoiva.setInt(1, idPrediccion);
                                 ProbabilidadChoiva probabilidadChoiva = pred.getPchoiva();
-                                Integer pChoivaManha = (probabilidadChoiva != null) ? probabilidadChoiva.getManha() : null;
+                                Integer pChoivaManha = (probabilidadChoiva != null) ? probabilidadChoiva.getManha()
+                                        : null;
                                 stmtProbabilidadChoiva.setInt(2, (pChoivaManha != null) ? pChoivaManha.intValue() : -1);
-                                Integer pChoivaTarde = (probabilidadChoiva != null) ? probabilidadChoiva.getTarde() : null;
+                                Integer pChoivaTarde = (probabilidadChoiva != null) ? probabilidadChoiva.getTarde()
+                                        : null;
                                 stmtProbabilidadChoiva.setInt(3, (pChoivaTarde != null) ? pChoivaTarde.intValue() : -1);
-                                Integer pChoivaNoite = (probabilidadChoiva != null) ? probabilidadChoiva.getNoite() : null;
+                                Integer pChoivaNoite = (probabilidadChoiva != null) ? probabilidadChoiva.getNoite()
+                                        : null;
                                 stmtProbabilidadChoiva.setInt(4, (pChoivaNoite != null) ? pChoivaNoite.intValue() : -1);
                                 stmtProbabilidadChoiva.executeUpdate();
 
@@ -115,17 +135,21 @@ public class H2GestionPrediccion {
                                 stmtVento.setInt(4, (ventoNoite != null) ? ventoNoite.intValue() : -1);
                                 stmtVento.executeUpdate();
                             }
+                            // Control de Excepciones
                         } catch (SQLException e) {
+                            System.out.println(
+                                    "Error al insertar datos de: Cielo, ProbabilidadChoiva, TemperaturasFranxa, Vento.");
                             e.printStackTrace();
                         }
                     } catch (SQLException e) {
+                        System.out.println("Error al Insertar datos de una o varias predicciones.");
                         e.printStackTrace();
                     }
                 });
                 System.out.println("Datos de prueba insertados correctamente.");
                 return true;
             } catch (SQLException e) {
-                System.out.println("Error al insertar datos de prueba.");
+                System.out.println("Error al preparar las consultas.");
                 e.printStackTrace();
             }
         } catch (Exception e) {
@@ -135,6 +159,8 @@ public class H2GestionPrediccion {
         return false;
     }
 
+    // Método estático para insertar datos de prueba de varias predicciones
+    // ficticias pasando como parámetro una conexión a una BBDD.
     public static void insertarDatosPrueba(Connection conexion) {
         try {
             String insertConcello = "INSERT INTO Concellos (idConcello, nome) VALUES (?, ?)";
@@ -205,6 +231,8 @@ public class H2GestionPrediccion {
         }
     }
 
+    // Método estático para mostrar datos de las predicciones de un concello,
+    // pasando como parámetro el id de un concello y un objeto conexión a una BBDD.
     public static void MostrarDatosTablasPorIdConcello(Connection conexion, int idConcello) {
         try {
             System.out.println();
@@ -246,12 +274,19 @@ public class H2GestionPrediccion {
         }
     }
 
+    // Método que muestra los datos de un objeto ResulSet (Resultado de realizar una
+    // consulta).
     private static void printResultSet(ResultSet resultSet) throws SQLException {
+        // Iteramos sobre las filas del ResulSet y por cada fila vamos mostrando los
+        // valores de las celdas.
         while (resultSet.next()) {
             int columnCount = resultSet.getMetaData().getColumnCount();
+            // Por cada fila iteramos sobre cada columna, mostramos el valor y agregamos una
+            // tabulación.
             for (int i = 1; i <= columnCount; i++) {
                 System.out.print(resultSet.getString(i) + "\t");
             }
+            // Salto de línea al terminar de iterar sobre las columnas de una fila.
             System.out.println();
         }
         resultSet.close();

@@ -3,7 +3,7 @@ BEGIN;
 	USE prediccionconcellos;
 	SET SQL_SAFE_UPDATES = 0;
 	DELETE FROM cielo;
-	DELETE FROM probabilidadchoiva;
+	DELETE FROM probabilidadechoiva;
 	DELETE FROM temperaturasfranxa;
 	DELETE FROM vento;
 	DELETE FROM predicciones;

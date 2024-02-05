@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+// Clase para conectar con la base de datos H2 en memoria
 public class ConexionH2 {
 
     public static Connection conn;
@@ -20,7 +21,7 @@ public class ConexionH2 {
     public Connection obtenerConexion() {
         if (conn == null) {
             try {
-                // Cargar el driver de MySQL
+                // Cargar el driver de H2
                 Class.forName("org.h2.Driver");
 
                 // Obtener la conexión
@@ -28,7 +29,7 @@ public class ConexionH2 {
 
                 System.out.println("Conexión exitosa a la base de datos");
             } catch (Exception e) {
-                System.out.println("No se encontró el driver de MySQL");
+                System.out.println("No se encontró el driver de H2.");
                 e.printStackTrace();
             }
         }
@@ -38,6 +39,7 @@ public class ConexionH2 {
     // Método para cerrar la conexión a la base de datos
     public void cerrarConexion() {
         try {
+            // Comprobamos si la conexion no es nula y la cerramos.
             if (conn != null) {
                 conn.close();
                 System.out.println("Conexión cerrada correctamente");

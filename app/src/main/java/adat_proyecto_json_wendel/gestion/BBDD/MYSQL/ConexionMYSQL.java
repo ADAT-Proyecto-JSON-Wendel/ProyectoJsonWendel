@@ -9,19 +9,38 @@ public class ConexionMYSQL {
 
         private static final String userName = "root";
         // private static final String password = "abc123.";
-        private static final String password = "";
+        private static final String password = "abc123.";
         private static final String dbms = "mysql";
         private static final String serverName = "127.0.0.1";
         private static final String portNumber = "3306";
-        private static final String dbName = "prediccionconcellos";
+        public static final String dbName = "prediccionconcellos";
         private static final String URL = "jdbc:mariadb://localhost:" + portNumber + "/" + dbName;
+        private static final String URL2 = "jdbc:mysql://localhost:" + portNumber;
 
         private static Connection conn = null;
+
+        // Método para obtener la conexión a la base de datos
+        public Connection getConexion() {
+                if (conn == null) {
+                        try {
+                                // Cargar el driver de MySQL
+                                Class.forName("com.mysql.cj.jdbc.Driver"); //Class.forName("com.mysql.cj.jdbc.Driver");
+
+                                // Obtener la conexión
+                                conn = DriverManager.getConnection(URL2, userName, password);
+                                System.out.println("Conexión exitosa a la base de datos");
+                        } catch (Exception e) {
+                                System.out.println("No se encontró el driver de MySQL");
+                                e.printStackTrace();
+                        }
+                }
+                return conn;
+        }
 
         public static Connection obtenerConexion() {
                 try {
                         Class.forName("org.mariadb.jdbc.Driver");
-                        Connection conexion = DriverManager.getConnection(URL, userName, password);
+                        Connection conexion = DriverManager.getConnection(URL2, userName, password);
                         return conexion;
                 } catch (ClassNotFoundException e) {
                         e.printStackTrace();
@@ -31,17 +50,20 @@ public class ConexionMYSQL {
                 return null;
         }
 
-        public static Connection cerrarConexion() {
+        // Método para cerrar la conexión a la base de datos
+        public void cerrarConexion() {
                 try {
-                        if (conn != null && !conn.isClosed()) {
+                        // Comprobamos si la conexion no es nula y la cerramos.
+                        if (conn != null) {
                                 conn.close();
-                                System.out.println("Se ha cerrado la conexion con MYSQL.");
+                                System.out.println("Conexión cerrada correctamente");
+                        } else {
+                                System.out.println("La conexión ya estaba cerrada.");
                         }
-                } catch (Exception e) {
-                        System.out.println("Error al cerrar la conexion.");
+                } catch (SQLException e) {
+                        System.out.println("Error al cerrar la conexión");
                         e.printStackTrace();
                 }
-                return conn;
         }
 
         public void setConnection() throws SQLException {
@@ -54,28 +76,34 @@ public class ConexionMYSQL {
                                 this.dbName);
         }
 
-        public Connection getConnection() throws SQLException {
-                if (conn != null) {
-                        return conn;
+        public Connection getConnection() {
+                try {
+                        if (conn != null) {
+                                return conn;
+                        }
+                        Properties connectionProps = new Properties();
+                        connectionProps.put("user", userName);
+                        connectionProps.put("password", password);
+                        if (dbms.equals("mysql")) {
+                                conn = DriverManager.getConnection(
+                                                "jdbc:" + dbms + "://" +
+                                                                serverName +
+                                                                ":" + portNumber + "/" + dbName,
+                                                connectionProps);
+                        } else if (dbms.equals("derby")) {
+                                conn = DriverManager.getConnection(
+                                                "jdbc:" + dbms + ":" +
+                                                                dbName +
+                                                                ";create=true",
+                                                connectionProps);
+                        }
+                        System.out.println("Conexion establecida en la base de datos MYSQL.\n\tServidor: " + URL);
+                } catch (Exception e) {
+                        System.out.println("Error al establecer la conexión.");
+                        e.printStackTrace();
                 }
-                Properties connectionProps = new Properties();
-                connectionProps.put("user", userName);
-                connectionProps.put("password", password);
-                if (dbms.equals("mysql")) {
-                        conn = DriverManager.getConnection(
-                                        "jdbc:" + dbms + "://" +
-                                                        serverName +
-                                                        ":" + portNumber + "/" + dbName,
-                                        connectionProps);
-                } else if (dbms.equals("derby")) {
-                        conn = DriverManager.getConnection(
-                                        "jdbc:" + dbms + ":" +
-                                                        dbName +
-                                                        ";create=true",
-                                        connectionProps);
-                }
-                System.out.println("Conexion establecida en la base de datos MYSQL.\n\tServidor: " + URL);
                 return conn;
+
         };
 
         public static Connection getConnection(

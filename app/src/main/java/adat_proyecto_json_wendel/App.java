@@ -11,11 +11,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
 
+import adat_proyecto_json_wendel.gestion.BBDD.GestionBBDD.GestionPredicciones;
 import adat_proyecto_json_wendel.gestion.BBDD.H2.ConexionH2;
 import adat_proyecto_json_wendel.gestion.BBDD.H2.H2GestionPrediccion;
 import adat_proyecto_json_wendel.gestion.BBDD.MYSQL.ConexionMYSQL;
 import adat_proyecto_json_wendel.gestion.BBDD.MYSQL.GestionMYSQL;
-import adat_proyecto_json_wendel.gestion.BBDD.MYSQL.LeerSQL;
+import adat_proyecto_json_wendel.gestion.BBDD.SQL.GestionFicherosSQL.LeerSQL;
 import adat_proyecto_json_wendel.gestion.gestionCSV.GestionCSVWriter;
 import adat_proyecto_json_wendel.gestion.gestionJSON.ConcellosParser;
 import adat_proyecto_json_wendel.gestion.gestionJSON.DescripcionParser;
@@ -25,7 +26,7 @@ import adat_proyecto_json_wendel.util.Metodos;
 
 public class App {
 
-    public static int SALIR = 17;
+    public static int SALIR = 18;
 
     // Strings con los datos que voy a utilizar, como por ejemplo las rutas
     // -------------
@@ -65,10 +66,10 @@ public class App {
     public static Connection connH2;
     public static Connection connMYSQL;
 
-    public static final String rutaCrearTablasMYSQL = "app\\src\\main\\java\\adat_proyecto_json_wendel\\gestion\\BBDD\\MYSQL\\SQL\\CrearTablas.sql";
-    public static final String rutaCrearTablasH2 = "app\\src\\main\\java\\adat_proyecto_json_wendel\\gestion\\BBDD\\MYSQL\\SQL\\CrearTablasH2.sql";
-    public static final String rutaEliminarDatosTablasMYSQL = "app\\src\\main\\java\\adat_proyecto_json_wendel\\gestion\\BBDD\\MYSQL\\SQL\\EliminarDatosTablas.sql";
-    public static final String rutaInsertarDatosPruebaMYSQL = "app\\src\\main\\java\\adat_proyecto_json_wendel\\gestion\\BBDD\\MYSQL\\SQL\\InsertarDatosPrueba.sql";
+    public static final String rutaCrearTablasMYSQL = "app\\src\\main\\java\\adat_proyecto_json_wendel\\gestion\\BBDD\\SQL\\CrearTablas.sql";
+    public static final String rutaCrearTablasH2 = "app\\src\\main\\java\\adat_proyecto_json_wendel\\gestion\\BBDD\\SQL\\CrearTablasH2.sql";
+    public static final String rutaEliminarDatosTablasMYSQL = "app\\src\\main\\java\\adat_proyecto_json_wendel\\gestion\\BBDD\\SQL\\EliminarDatosTablas.sql";
+    public static final String rutaInsertarDatosPruebaMYSQL = "app\\src\\main\\java\\adat_proyecto_json_wendel\\gestion\\BBDD\\SQL\\InsertarDatosPrueba.sql";
 
     public static int OpcionesMenu(Scanner sc) {
         int opcion = -1;
@@ -81,14 +82,15 @@ public class App {
         System.out.println("7 - Mostrar datos Predicciones principales ciudades desde memoria");
         System.out.println("8 - Guardar Predicciones en la BBDD H2");
         System.out.println("9 - Mostrar datos por pantalla de BBDD H2");
-        System.out.println("10.- Conexion BBDD MYSQL");
-        System.out.println("11.- Cerrar conexion MYSQL");
-        System.out.println("12.- Insertar concello prueba");
-        System.out.println("13.- Crear Tablas en BBDD MYSQL");
-        System.out.println("14.- Insertar datos pruebas en BBDD MYSQL");
-        System.out.println("15.- Eliminar datos de todas las tablas.");
-        System.out.println("16.- Insertar datos Predicciones desde cache a BBDD MYSQL.");
-        System.out.println("17 - SALIR.");
+        System.out.println("10 - Conexion BBDD MYSQL");
+        System.out.println("11 - Cerrar conexion MYSQL");
+        System.out.println("12 - Insertar concello prueba");
+        System.out.println("13 - Crear Tablas en BBDD MYSQL");
+        System.out.println("14 - Insertar datos pruebas en BBDD MYSQL");
+        System.out.println("15 - Eliminar datos de todas las tablas.");
+        System.out.println("16 - Insertar datos Predicciones desde cache a BBDD MYSQL.");
+        System.out.println("17 - Mostrar datos tablas BBDD MYSQL.");
+        System.out.println("18 - SALIR.");
         try {
             opcion = Integer.parseInt(sc.nextLine());
         } catch (Exception e) {
@@ -112,7 +114,6 @@ public class App {
                     if (LeerSQL.ejecutarSentenciasFicheroSQL(connH2, rutaCrearTablasMYSQL)) {
                         System.out.println("Tablas creadas correctamente.");
                     }
-                    // H2CrearBBDD.crearTablas(connH2);
                 } else {
                     System.out.println("Error. Primero debe de establecerse una conexión.");
                 }
@@ -127,7 +128,6 @@ public class App {
                 }
                 System.out.println();
                 break;
-
             case 4: // Cerrar conexion H2.
                 if (connH2 == null) {
                     conexionH2.cerrarConexion();
@@ -166,15 +166,15 @@ public class App {
                 System.out.println();
                 break;
             case 9: // Mostrar datos por pantalla de BBDD H2.
-                MostrarPrediccionesDeBBDDH2(listaPrediccionesCiudadesImportantes);
+                GestionPredicciones.MostrarPrediccionesBBDDLista(listaPrediccionesCiudadesImportantes, connH2);
                 System.out.println();
                 break;
             case 10: // Obtener conexion MYSQL
-                conectarMYSQL(conexionMYSQL);
+                connMYSQL = conexionMYSQL.getConexion();
                 System.out.println();
                 break;
             case 11: // Cerrar conexion MYSQL
-                connMYSQL = ConexionMYSQL.cerrarConexion();
+                conexionMYSQL.cerrarConexion();
                 System.out.println();
                 break;
             case 12: // Insertar Concello prueba
@@ -200,23 +200,23 @@ public class App {
                 System.out.println();
                 break;
             case 16: // Insertar datos Predicciones desde cache a BBDD MYSQL
-                if (listaPrediccionesCiudadesImportantes != null) {
-                    H2GestionPrediccion.insertaListaPredicciones(connMYSQL, listaPrediccionesCiudadesImportantes);
-                } else {
-                    System.out.println("La lista de predicciones esta vacia, primero debes realizar las peticiones.");
+                // Seleccionar primero la BBDD, si existe y se ha seleccionado correctamente insertamos las predicciones.
+                if (GestionPredicciones.seleccionarBaseDeDatos(connMYSQL, ConexionMYSQL.dbName)) {
+                    if (listaPrediccionesCiudadesImportantes != null) {
+                        H2GestionPrediccion.insertaListaPredicciones(connMYSQL, listaPrediccionesCiudadesImportantes);
+                    } else {
+                        System.out
+                                .println("La lista de predicciones esta vacia, primero debes realizar las peticiones.");
+                    }
+                    System.out.println();
                 }
+                break;
+            case 17: // Mostrar datos por pantalla de BBDD MYSQL.
+                GestionPredicciones.MostrarPrediccionesBBDDLista(listaPrediccionesCiudadesImportantes, connMYSQL);
                 System.out.println();
                 break;
             default:
                 break;
-        }
-    }
-
-    public static void conectarMYSQL(ConexionMYSQL conexionMYSQL) {
-        try {
-            connMYSQL = conexionMYSQL.getConnection();
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
     }
 
@@ -255,19 +255,6 @@ public class App {
         return listaPrediccionesCiudadesImportantes;
     }
 
-    public static void MostrarPrediccionesDeBBDDH2(List<PrediccionConcello> predicciones) {
-        for (PrediccionConcello pr : predicciones) {
-            if (pr != null) {
-                H2GestionPrediccion.MostrarDatosTablasPorIdConcello(connH2, pr.getIdConcello());
-            }
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
     public static void GuardarDatosPrediccionesEnH2(List<PrediccionConcello> predicciones) {
         try {
             for (PrediccionConcello pr : predicciones) {
@@ -281,7 +268,8 @@ public class App {
                     if (H2GestionPrediccion.insertarDatosPrediccion(connH2, pr)) {
                         System.out.println("Guardada Prediccion con idConcello: " + idConcello + " en BBDD H2.");
                     } else {
-                        System.out.println("Error al guardar Prediccion con idConcello: " + idConcello + " en BBDD H2.");
+                        System.out
+                                .println("Error al guardar Prediccion con idConcello: " + idConcello + " en BBDD H2.");
                     }
                 }
                 try {
