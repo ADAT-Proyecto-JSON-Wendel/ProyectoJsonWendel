@@ -11,11 +11,9 @@ public class ConexionMYSQL {
         private static final String userName = "root";
 
         // Contraseña para la conexión a la base de datos
-        //private static final String password = "abc123.";
-        private static final String password = "";
+        private static final String password = "abc123.";
 
-        // Sistema de gestión de bases de datos (DBMS) que se utilizará (MySQL en este
-        // caso)
+        // Sistema de gestión de bases de datos (DBMS) que se utilizará (MySQL en este caso)
         private static final String dbms = "mysql";
 
         // Dirección IP del servidor de la base de datos

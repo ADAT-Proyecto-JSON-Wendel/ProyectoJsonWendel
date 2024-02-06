@@ -10,8 +10,6 @@ public class ConexionH2 {
     public static Connection conn;
 
     // Datos de conexión a la base de datos
-    // private static final String URL =
-    // "jdbc:mysql://localhost:3306/nombre_base_datos";
     private static final String URL = "jdbc:h2:mem:test";
     private static final String USUARIO = "";
     private static final String CONTRASENA = "";

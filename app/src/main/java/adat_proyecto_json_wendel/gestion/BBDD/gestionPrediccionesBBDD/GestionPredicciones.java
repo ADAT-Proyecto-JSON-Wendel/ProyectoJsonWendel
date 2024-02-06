@@ -18,9 +18,20 @@ import adat_proyecto_json_wendel.model.Vento;
 // Clase para gestionar las predicciones en una base de datos
 public class GestionPredicciones {
 
+    // Consulta SQL para seleccionar registros de la tabla "cielo" basados en un ID
+    // de predicción
     private static final String SELECT_CIELO_BY_PREDICCION = "SELECT * FROM cielo WHERE idPrediccion = ?";
+
+    // Consulta SQL para seleccionar registros de la tabla "probabilidadeChoiva"
+    // basados en un ID de predicción
     private static final String SELECT_PROBABILIDAD_CHOIVA_BY_PREDICCION = "SELECT * FROM probabilidadeChoiva WHERE idPrediccion = ?";
+
+    // Consulta SQL para seleccionar registros de la tabla "temperaturasFranxa"
+    // basados en un ID de predicción
     private static final String SELECT_TEMPERATURAS_FRANXA_BY_PREDICCION = "SELECT * FROM temperaturasFranxa WHERE idPrediccion = ?";
+
+    // Consulta SQL para seleccionar registros de la tabla "vento" basados en un ID
+    // de predicción
     private static final String SELECT_VENTO_BY_PREDICCION = "SELECT * FROM vento WHERE idPrediccion = ?";
 
     /**
@@ -265,7 +276,7 @@ public class GestionPredicciones {
      * @param listaPredicciones la lista de predicciones a insertar.
      * @param conn              la conexión a la base de datos.
      */
-    public static void InsertarListaPrediccionesEnBBDDMysql(List<PrediccionConcello> listaPredicciones,
+    public static void InsertarListaPrediccionesEnBBDD(List<PrediccionConcello> listaPredicciones,
             Connection conn) {
         try {
             // Iterar sobre cada predicción en la lista
@@ -892,15 +903,22 @@ public class GestionPredicciones {
         }
     }
 
+    /**
+     * Muestra los datos de las tablas relacionadas con las predicciones para un
+     * concello dado.
+     * 
+     * @param conexion   La conexión a la base de datos.
+     * @param idConcello El ID del concello del cual se desean mostrar los datos.
+     */
     public static void MostrarDatosTablasPorIdConcello(Connection conexion, int idConcello) {
         try {
             // Imprimir título
             System.out.println();
             System.out.println("------------\t\t\tPredicción con id: " + idConcello + "\t\t\t -----------------------");
-    
+
             // Obtener la lista de predicciones para el concello dado
             List<DiaPrediccion> predicciones = obtenerPrediccionesPorConcello(conexion, idConcello);
-    
+
             // Iterar sobre cada predicción y mostrar los resultados
             for (DiaPrediccion prediccion : predicciones) {
                 // Mostrar datos de la predicción actual
@@ -910,19 +928,20 @@ public class GestionPredicciones {
                 System.out.println("Temperatura máxima: " + prediccion.gettMax());
                 System.out.println("Temperatura mínima: " + prediccion.gettMin());
                 System.out.println("Índice ultravioleta máximo: " + prediccion.getUvMax());
-    
+
                 // Mostrar datos de la tabla Cielo
                 System.out.println("Datos de la tabla Cielo:");
                 Cielo cielo = prediccion.getCeo();
                 System.out.println("Mañana\tTarde\tNoche");
                 System.out.println(cielo.getManha() + "\t" + cielo.getTarde() + "\t" + cielo.getNoite());
-    
+
                 // Mostrar datos de la tabla ProbabilidadChoiva
                 System.out.println("Datos de la tabla ProbabilidadChoiva:");
                 ProbabilidadChoiva probabilidadChoiva = prediccion.getPchoiva();
                 System.out.println("Mañana\tTarde\tNoche");
-                System.out.println(probabilidadChoiva.getManha() + "\t" + probabilidadChoiva.getTarde() + "\t" + probabilidadChoiva.getNoite());
-    
+                System.out.println(probabilidadChoiva.getManha() + "\t" + probabilidadChoiva.getTarde() + "\t"
+                        + probabilidadChoiva.getNoite());
+
                 // Mostrar datos de la tabla TemperaturasFranxa
                 System.out.println("Datos de la tabla TemperaturasFranxa:");
                 TemperaturasFranxa tmaxFranxa = prediccion.getTmaxFranxa();
@@ -931,37 +950,48 @@ public class GestionPredicciones {
                 System.out.println(tmaxFranxa.getManha() + "\t" + tmaxFranxa.getTarde() + "\t" + tmaxFranxa.getNoite());
                 System.out.println("Temperatura mínima - Mañana\tTarde\tNoche");
                 System.out.println(tminFranxa.getManha() + "\t" + tminFranxa.getTarde() + "\t" + tminFranxa.getNoite());
-    
+
                 // Mostrar datos de la tabla Vento
                 System.out.println("Datos de la tabla Vento:");
                 Vento vento = prediccion.getVento();
                 System.out.println("Mañana\tTarde\tNoche");
                 System.out.println(vento.getManha() + "\t" + vento.getTarde() + "\t" + vento.getNoite());
-    
+
                 // Imprimir separador y salto de línea
                 System.out.println("---------------------------------------------------------------------------------");
                 System.out.println();
             }
-    
+
         } catch (Exception e) {
             // Manejar cualquier excepción relacionada con la ejecución de las consultas
             System.out.println("Error al obtener datos de predicción para el concello con ID: " + idConcello);
             e.printStackTrace();
         }
     }
-    
-    
 
+    /**
+     * Obtiene las predicciones meteorológicas para un concello específico desde la
+     * base de datos.
+     * 
+     * @param conexion   La conexión a la base de datos.
+     * @param idConcello El ID del concello para el cual se desean obtener las
+     *                   predicciones.
+     * @return Una lista de objetos DiaPrediccion que representan las predicciones
+     *         meteorológicas para el concello dado.
+     */
     public static List<DiaPrediccion> obtenerPrediccionesPorConcello(Connection conexion, int idConcello) {
         List<DiaPrediccion> predicciones = new ArrayList<>();
 
         try {
+            // Consulta para obtener las predicciones para el concello dado
             String query = "SELECT * FROM Predicciones WHERE idConcello = ?";
             PreparedStatement statement = conexion.prepareStatement(query);
             statement.setInt(1, idConcello);
             ResultSet resultSet = statement.executeQuery();
 
+            // Iterar sobre los resultados de la consulta
             while (resultSet.next()) {
+                // Obtener los datos de la predicción actual
                 int idPrediccion = resultSet.getInt("idPrediccion");
                 String dataPredicion = resultSet.getString("dataPredicion");
                 int nivelAviso = resultSet.getInt("nivelAviso");
@@ -969,14 +999,15 @@ public class GestionPredicciones {
                 int tMin = resultSet.getInt("tMin");
                 int uvMax = resultSet.getInt("uvMax");
 
-                // Aquí haces consultas adicionales para obtener los datos de las tablas
-                // relacionadas
+                // Obtener los datos de las tablas relacionadas para la predicción actual
                 Cielo ceo = obtenerCieloPorPrediccion(conexion, idPrediccion);
                 ProbabilidadChoiva pchoiva = obtenerProbabilidadChoivaPorPrediccion(conexion, idPrediccion);
                 TemperaturasFranxa tmaxFranxa = obtenerTemperaturasFranxaPorPrediccion(conexion, idPrediccion);
                 TemperaturasFranxa tminFranxa = obtenerTemperaturasFranxaPorPrediccion(conexion, idPrediccion);
                 Vento vento = obtenerVentoPorPrediccion(conexion, idPrediccion);
 
+                // Crear un objeto DiaPrediccion con los datos obtenidos y agregarlo a la lista
+                // de predicciones
                 DiaPrediccion prediccion = new DiaPrediccion();
                 prediccion.setCeo(ceo);
                 prediccion.setDataPredicion(dataPredicion);
@@ -988,13 +1019,14 @@ public class GestionPredicciones {
                 prediccion.setTminFranxa(tminFranxa);
                 prediccion.setUvMax(uvMax);
                 prediccion.setVento(vento);
-
                 predicciones.add(prediccion);
             }
 
+            // Cerrar los recursos
             resultSet.close();
             statement.close();
         } catch (SQLException e) {
+            // Manejar cualquier excepción relacionada con la ejecución de la consulta
             System.out.println("Error al obtener las predicciones para el concello con ID: " + idConcello);
             e.printStackTrace();
         }
@@ -1002,69 +1034,150 @@ public class GestionPredicciones {
         return predicciones;
     }
 
+    /**
+     * Obtiene los datos meteorológicos de la tabla Cielo para una predicción
+     * específica desde la base de datos.
+     * 
+     * @param conexion     La conexión a la base de datos.
+     * @param idPrediccion El ID de la predicción para la cual se desean obtener los
+     *                     datos de la tabla Cielo.
+     * @return Un objeto Cielo que contiene los datos meteorológicos de la tabla
+     *         Cielo para la predicción dada.
+     * @throws SQLException Si ocurre algún error al ejecutar la consulta SQL.
+     */
     public static Cielo obtenerCieloPorPrediccion(Connection conexion, int idPrediccion) throws SQLException {
+        // Preparar la consulta SQL para obtener los datos de la tabla Cielo
         PreparedStatement statement = conexion.prepareStatement(SELECT_CIELO_BY_PREDICCION);
         statement.setInt(1, idPrediccion);
         ResultSet resultSet = statement.executeQuery();
+
+        // Inicializar el objeto Cielo
         Cielo cielo = null;
+
+        // Verificar si hay resultados y asignar los valores correspondientes al objeto
+        // Cielo
         if (resultSet.next()) {
             cielo = new Cielo();
             cielo.setManha(resultSet.getInt("manha"));
             cielo.setTarde(resultSet.getInt("tarde"));
             cielo.setNoite(resultSet.getInt("noite"));
         }
+
+        // Cerrar los recursos
         resultSet.close();
         statement.close();
+
         return cielo;
     }
 
+    /**
+     * Obtiene los datos de probabilidad de lluvia para una predicción específica
+     * desde la base de datos.
+     * 
+     * @param conexion     La conexión a la base de datos.
+     * @param idPrediccion El ID de la predicción para la cual se desean obtener los
+     *                     datos de probabilidad de lluvia.
+     * @return Un objeto ProbabilidadChoiva que contiene los datos de probabilidad
+     *         de lluvia para la predicción dada.
+     * @throws SQLException Si ocurre algún error al ejecutar la consulta SQL.
+     */
     public static ProbabilidadChoiva obtenerProbabilidadChoivaPorPrediccion(Connection conexion, int idPrediccion)
             throws SQLException {
+        // Preparar la consulta SQL para obtener los datos de probabilidad de lluvia
         PreparedStatement statement = conexion.prepareStatement(SELECT_PROBABILIDAD_CHOIVA_BY_PREDICCION);
         statement.setInt(1, idPrediccion);
         ResultSet resultSet = statement.executeQuery();
+
+        // Inicializar el objeto ProbabilidadChoiva
         ProbabilidadChoiva probabilidadeChoiva = null;
+
+        // Verificar si hay resultados y asignar los valores correspondientes al objeto
+        // ProbabilidadChoiva
         if (resultSet.next()) {
             probabilidadeChoiva = new ProbabilidadChoiva();
             probabilidadeChoiva.setManha(resultSet.getInt("manha"));
             probabilidadeChoiva.setTarde(resultSet.getInt("tarde"));
             probabilidadeChoiva.setNoite(resultSet.getInt("noite"));
         }
+
+        // Cerrar los recursos
         resultSet.close();
         statement.close();
+
         return probabilidadeChoiva;
     }
 
+    /**
+     * Obtiene los datos de temperaturas por franja horaria para una predicción
+     * específica desde la base de datos.
+     * 
+     * @param conexion     La conexión a la base de datos.
+     * @param idPrediccion El ID de la predicción para la cual se desean obtener los
+     *                     datos de temperaturas por franja horaria.
+     * @return Un objeto TemperaturasFranxa que contiene los datos de temperaturas
+     *         por franja horaria para la predicción dada.
+     * @throws SQLException Si ocurre algún error al ejecutar la consulta SQL.
+     */
     public static TemperaturasFranxa obtenerTemperaturasFranxaPorPrediccion(Connection conexion, int idPrediccion)
             throws SQLException {
+        // Preparar la consulta SQL para obtener los datos de temperaturas por franja
+        // horaria
         PreparedStatement statement = conexion.prepareStatement(SELECT_TEMPERATURAS_FRANXA_BY_PREDICCION);
         statement.setInt(1, idPrediccion);
         ResultSet resultSet = statement.executeQuery();
+
+        // Inicializar el objeto TemperaturasFranxa
         TemperaturasFranxa temperaturasFranxa = null;
+
+        // Verificar si hay resultados y asignar los valores correspondientes al objeto
+        // TemperaturasFranxa
         if (resultSet.next()) {
             temperaturasFranxa = new TemperaturasFranxa();
             temperaturasFranxa.setManha(resultSet.getInt("manha"));
             temperaturasFranxa.setTarde(resultSet.getInt("tarde"));
             temperaturasFranxa.setNoite(resultSet.getInt("noite"));
         }
+
+        // Cerrar los recursos
         resultSet.close();
         statement.close();
+
         return temperaturasFranxa;
     }
 
+    /**
+     * Obtiene los datos de velocidad del viento para una predicción específica
+     * desde la base de datos.
+     * 
+     * @param conexion     La conexión a la base de datos.
+     * @param idPrediccion El ID de la predicción para la cual se desean obtener los
+     *                     datos de velocidad del viento.
+     * @return Un objeto Vento que contiene los datos de velocidad del viento para
+     *         la predicción dada.
+     * @throws SQLException Si ocurre algún error al ejecutar la consulta SQL.
+     */
     public static Vento obtenerVentoPorPrediccion(Connection conexion, int idPrediccion) throws SQLException {
+        // Preparar la consulta SQL para obtener los datos de velocidad del viento
         PreparedStatement statement = conexion.prepareStatement(SELECT_VENTO_BY_PREDICCION);
         statement.setInt(1, idPrediccion);
         ResultSet resultSet = statement.executeQuery();
+
+        // Inicializar el objeto Vento
         Vento vento = null;
+
+        // Verificar si hay resultados y asignar los valores correspondientes al objeto
+        // Vento
         if (resultSet.next()) {
             vento = new Vento();
             vento.setManha(resultSet.getInt("manha"));
             vento.setTarde(resultSet.getInt("tarde"));
             vento.setNoite(resultSet.getInt("noite"));
         }
+
+        // Cerrar los recursos
         resultSet.close();
         statement.close();
+
         return vento;
     }
 

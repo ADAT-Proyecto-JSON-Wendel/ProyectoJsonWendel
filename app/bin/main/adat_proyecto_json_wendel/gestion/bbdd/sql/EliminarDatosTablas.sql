@@ -1,0 +1,13 @@
+START TRANSACTION;
+BEGIN;
+	USE prediccionconcellos;
+	SET SQL_SAFE_UPDATES = 0;
+	DELETE FROM cielo;
+	DELETE FROM probabilidadechoiva;
+	DELETE FROM temperaturasfranxa;
+	DELETE FROM vento;
+	DELETE FROM predicciones;
+	DELETE FROM concellos;
+COMMIT;
+SET AUTOCOMMIT = 1;
+SET SQL_SAFE_UPDATES = 1;

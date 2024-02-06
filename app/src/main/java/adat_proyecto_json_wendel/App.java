@@ -85,6 +85,7 @@ public class App {
         try {
             opcion = Integer.parseInt(sc.nextLine());
         } catch (Exception e) {
+            e.printStackTrace();
         }
         return opcion;
     }
@@ -200,18 +201,6 @@ public class App {
                         System.out.println("Primero hay que realizar las peticiones a la API.");
                     }
                     System.out.println();
-                    /*
-                     * if (listaPrediccionesCiudadesImportantes != null) {
-                     * System.out.println("Insertando predicciones en la base de datos MYSQL.");
-                     * GestionPredicciones.insertaListaPredicciones(connMYSQL,
-                     * listaPrediccionesCiudadesImportantes);
-                     * } else {
-                     * System.out.
-                     * println("La lista de predicciones esta vacia, primero debes realizar las peticiones."
-                     * );
-                     * }
-                     * System.out.println();
-                     */
                 }
                 break;
             case 17: // Mostrar datos por pantalla de BBDD MYSQL.
