@@ -1,5 +1,4 @@
-package adat_proyecto_json_wendel.gestion.BBDD.H2;
-
+package adat_proyecto_json_wendel.gestion.bbdd.h2;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;

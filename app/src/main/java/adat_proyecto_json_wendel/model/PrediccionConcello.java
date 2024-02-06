@@ -17,8 +17,18 @@ public class PrediccionConcello {
     public PrediccionConcello() {
         this.listaPredDiaConcello = new ArrayList<>();
     }
+    
 
     // Getter y Setter
+
+
+
+    public PrediccionConcello(int idConcello, List<DiaPrediccion> listaPredDiaConcello, String nome) {
+        this.idConcello = idConcello;
+        this.listaPredDiaConcello = listaPredDiaConcello;
+        this.nome = nome;
+    }
+
 
     public int getIdConcello() {return idConcello;}
 

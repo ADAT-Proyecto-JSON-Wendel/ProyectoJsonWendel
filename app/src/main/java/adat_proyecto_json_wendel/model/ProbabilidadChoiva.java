@@ -8,6 +8,15 @@ public class ProbabilidadChoiva {
         private Integer tarde;
         private Integer noite;
       
+        public ProbabilidadChoiva() {
+        }
+
+        public ProbabilidadChoiva(Integer manha, Integer tarde, Integer noite) {
+            this.manha = manha;
+            this.tarde = tarde;
+            this.noite = noite;
+        }
+
         public Integer getManha() {return manha;}
 
         public void setManha(Integer manha) {this.manha = manha;}

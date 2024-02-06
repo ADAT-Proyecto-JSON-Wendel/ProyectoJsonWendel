@@ -20,6 +20,23 @@ public class DiaPrediccion {
     // Temperatura mínima del día
     private Integer tMin;
 
+    public DiaPrediccion() {
+    }
+
+    public DiaPrediccion(Cielo ceo, String dataPredicion, Integer nivelAviso, ProbabilidadChoiva pchoiva, Integer tMax,
+            Integer tMin, TemperaturasFranxa tmaxFranxa, TemperaturasFranxa tminFranxa, Integer uvMax, Vento vento) {
+        this.ceo = ceo;
+        this.dataPredicion = dataPredicion;
+        this.nivelAviso = nivelAviso;
+        this.pchoiva = pchoiva;
+        this.tMax = tMax;
+        this.tMin = tMin;
+        this.tmaxFranxa = tmaxFranxa;
+        this.tminFranxa = tminFranxa;
+        this.uvMax = uvMax;
+        this.vento = vento;
+    }
+
     // Temperaturas para diferentes franjas horarias
     private TemperaturasFranxa tmaxFranxa;
     private TemperaturasFranxa tminFranxa;
